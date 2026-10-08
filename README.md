@@ -1,0 +1,42 @@
+# Roomie
+
+Shared living. Simpler money.
+
+Roomie is an Expo / React Native app for Malaysian roommates to track shared expenses, bills, balances, and repayments in MYR. The app includes the UI foundation, a fictional household preview, and milestone 2 account/profile flows backed by Supabase when configured.
+
+## Run locally
+
+From `/Users/sai/roomie`:
+
+```sh
+npx expo start
+```
+
+Scan the QR code with a compatible Expo Go client, or press `w` for a web preview. For web only: `npx expo start --web`. Native device testing is still required.
+
+```sh
+npm run lint
+npm run typecheck
+npm test
+```
+
+This project uses npm / package-lock.json, Expo SDK 57, React Native 0.86, React 19, TypeScript, and Expo Router. Install future dependencies with `npx expo install <package>` after consulting matching SDK docs.
+
+## Organization
+
+- `src/app`: Router layouts and thin screen entry points; the only Router root.
+- `src/features`: auth, households, expenses, balances, settlements, bills.
+- `src/components/ui`: shared Button, Input, Card.
+- `src/theme`: Roomie palette, spacing, radii, typography.
+- `src/hooks`, `src/lib`, `src/types`, `src/utils`: shared code as needed.
+- `docs/product-specification.md`: complete user-provided product brief.
+- `docs/progress.md`: implementation status and handoff.
+- `docs/supabase-setup.md`: development project, migration, public configuration, redirects, and connected verification.
+- `supabase/migrations`: versioned database changes; profiles are the first migration.
+- `tests`: Node tests for auth/storage and PostgreSQL profile authorization.
+
+No live Supabase project is connected yet. Follow [the setup guide](docs/supabase-setup.md) to apply the profile migration and fill `.env.local` using `.env.example`. Missing configuration produces an honest setup state and disables account submissions. The implementation includes email signup/confirmation, sign-in, recovery, persistent sessions, logout, profile editing, and protected Home/Profile routes.
+
+The sample toggle only changes local screen state. No sample values are account balances; household, expense, and repayment operations remain future milestones. The signed-in home screen shows an empty household state. Node 22.18+ is required for the dependency-free test runner (Node 24 is used here).
+
+Do not use the original starter reset script: it can replace the Roomie source. Some inactive starter helper components/assets are retained to preserve the original setup; the layout no longer mounts their tabs or animated overlay. `/explore` redirects to `/` for old links.
