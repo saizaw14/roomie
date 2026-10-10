@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'expo-router';
 import { Text } from 'react-native';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -42,5 +43,7 @@ export function ProfileScreen() {
         <Button label="Retry profile" loading={profile.isFetching} onPress={() => void profile.refetch()} />
       </Card> : <ProfileEditor initialName={profile.data?.display_name ?? ''} exists={!!profile.data} />}
     <Text style={authStyles.body}>Your email is managed by your account. Email changes and avatar uploads will be added in a later milestone.</Text>
+    <Link href="/households" asChild><Button label="Your households" variant="secondary" /></Link>
+    <Link href="/home" asChild><Button label="Back to home" variant="secondary" /></Link>
   </AuthScreen>;
 }

@@ -58,3 +58,15 @@ Remaining verification:
 - The workspace still has no Git repository; no commit/push has been performed.
 
 Next product milestone: 3 — households, memberships, owner invitations, atomic redemption, RLS/RPC authorization, multi-household selection, and member flows. First connect and verify milestone 2 using the setup guide. Define ownership transfer/departure/rejoining/outstanding-debt behavior before removal features. Financial features remain milestones 4–7 per product-specification.md.
+
+## 2026-10-09 — Milestone 3 implementation
+
+Implemented household creation/selection, owner settings, invitation creation/revocation, code/link joining, and member views. Protected routes remain under Expo Router; public `/join` retains an invitation during login without auto-redemption. TanStack Query keys include the account and household. Database writes run only through authenticated, narrowly scoped RPCs; RLS restricts household/member reads to active members and invite-token reads to owners. Active peers can read profiles but cannot edit one another.
+
+Migration: `20261009000100_households.sql`. SQL Editor fallback: `docs/supabase-dashboard-households.sql`, including atomic migration-history recording for the existing network connectivity issue. Hosted deployment and multi-account/mobile acceptance are pending. Full flow and lifecycle decisions: `docs/households-setup.md`.
+
+Membership leaving/removal/transfer/reactivation are deferred until debt-aware safeguards exist; no direct membership writes or deletions are exposed. Ended memberships retain their IDs and lose access. Rejoining cannot silently create a second membership.
+
+The earlier no-Git status is historical: the repository is now connected to `saizaw14/roomie`, and this work is on `feature/households-and-invites`. The profiles migration was applied by the user through the SQL Editor with its history entry. Live email confirmation remains pending; the default sender hit its email limit.
+
+Milestone 3 validation: 35 tests passed; Expo lint and TypeScript passed; iOS/Android/web export passed to `/private/tmp/roomie-milestone3-final-export`. The SQL Editor fallback was applied in isolated PostgreSQL and its stored migration body compared against the source. Browser verification was attempted but the in-app browser is unavailable in this session, so visual/mobile runtime and hosted multi-account/concurrency verification remain pending. The isolated preview used port 8087 and is stopped after checks.
