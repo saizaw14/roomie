@@ -7,9 +7,14 @@ import { AuthScreen, authStyles } from '@/features/auth/components/auth-screen';
 import { useProfile } from '@/features/profile/use-profile';
 import { useAuth } from '@/lib/auth-context';
 import { authErrorMessage } from '@/features/auth/error-message';
+import { useHouseholds } from './use-households';
+import { householdError } from './validation';
+import { useInviteIntent } from './invite-intent';
 export function HomeScreen() {
   const { session, signOut } = useAuth();
   const profile = useProfile();
+  const households = useHouseholds();
+  const intent = useInviteIntent();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const name = profile.data?.display_name;
@@ -25,11 +30,18 @@ export function HomeScreen() {
       <Text accessibilityRole="alert" style={authStyles.error}>Your profile couldn’t be loaded.</Text>
       <Button label="Retry profile" variant="secondary" loading={profile.isFetching} onPress={() => void profile.refetch()} />
     </Card> : null}
-    <Card>
-      <Text accessibilityRole="header" style={authStyles.title}>Room for your household.</Text>
-      <Text style={authStyles.body}>Your account is ready. Creating and joining households is the next step we’re building.</Text>
-      <Text style={authStyles.body}>Balances, bills, and repayments will appear once household features are available.</Text>
-    </Card>
+    {intent.code ? <Link href={{ pathname: '/join', params: { code: intent.code } }} asChild><Button label="Continue household invitation" /></Link> : null}
+    {households.isPending ? <Text style={authStyles.body}>Loading your households…</Text> : null}
+    {households.isError ? <Card><Text accessibilityRole="alert" style={authStyles.error}>{householdError(households.error)}</Text><Button label="Retry households" loading={households.isFetching} onPress={() => void households.refetch()} /></Card> : null}
+    {households.isSuccess ? <Card>
+      <Text accessibilityRole="header" style={authStyles.title}>{households.current?.name ?? 'Room for your household.'}</Text>
+      <Text style={authStyles.body}>{households.current ? `${households.current.currency} · ${households.membership?.role ?? 'member'}` : 'Create a household or join your roommates using an invitation.'}</Text>
+      {households.current ? <Link href={{ pathname: '/households/[id]', params: { id: households.current.id } }} asChild><Button label="Members and settings" /></Link> : null}
+      <Text style={authStyles.body}>Expense tracking, balances, and bills are coming in later milestones.</Text>
+    </Card> : null}
+    <Link href="/households" asChild><Button label="Your households / Switch household" variant="secondary" /></Link>
+    <Link href="/households/create" asChild><Button label="Create household" /></Link>
+    <Link href="/join" asChild><Button label="Join household" variant="secondary" /></Link>
     <Link href="/profile" asChild><Button label={profile.data ? 'View and edit profile' : 'Set up your profile'} /></Link>
     {error ? <Text accessibilityRole="alert" style={authStyles.error}>{error}</Text> : null}
     <Button label="Log out" variant="secondary" loading={busy} onPress={() => void logout()} />
