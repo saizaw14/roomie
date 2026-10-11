@@ -3,6 +3,7 @@ import { AppState, Platform } from 'react-native';
 import type { Session } from '@supabase/supabase-js';
 import { useQueryClient } from '@tanstack/react-query';
 import { configurationIssue, supabase, requireSupabase } from './supabase';
+import { setRememberSession } from './session-storage';
 import { createAuthApi } from '@/features/auth/auth-api';
 import { authCallbackUrl } from '@/features/auth/redirect-url';
 import type { LoginValues, SignupValues, RecoveryValues, PasswordUpdateValues } from '@/features/auth/schemas';
@@ -10,7 +11,7 @@ import type { LoginValues, SignupValues, RecoveryValues, PasswordUpdateValues } 
 type AuthContextValue = {
   session: Session | null; ready: boolean; issue: string | null; configured: boolean;
   recovering: boolean; finishRecovery: () => void; beginRecovery: () => void;
-  signIn: (input: LoginValues) => Promise<void>;
+  signIn: (input: LoginValues, remember?: boolean) => Promise<void>;
   signUp: (input: SignupValues) => Promise<{ needsConfirmation: boolean }>;
   requestRecovery: (input: RecoveryValues) => Promise<void>;
   updatePassword: (input: PasswordUpdateValues) => Promise<void>;
@@ -69,11 +70,13 @@ export function AuthProvider({ children }: PropsWithChildren) {
     const subscription = AppState.addEventListener('change', refresh);
     return () => { subscription.remove(); client.auth.stopAutoRefresh(); };
   }, []);
-  const signIn = useCallback(async (input: LoginValues) => {
+  const signIn = useCallback(async (input: LoginValues, remember = true) => {
+    await setRememberSession(remember);
     await createAuthApi(requireSupabase(), authCallbackUrl).signIn(input);
     setRestoreIssue(null); setRecovering(false);
   }, []);
   const signUp = useCallback(async (input: SignupValues) => {
+    await setRememberSession(true);
     const result = await createAuthApi(requireSupabase(), authCallbackUrl).signUp(input);
     setRestoreIssue(null); return { needsConfirmation: result.needsConfirmation };
   }, []);
