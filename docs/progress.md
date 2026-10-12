@@ -74,3 +74,9 @@ Milestone 3 validation: 35 tests passed; Expo lint and TypeScript passed; iOS/An
 ## Milestone 4 — implemented locally (2026-10-12)
 
 Expense list, three-step create/edit flow, equal/exact/percentage splitting, expense details, versioned revisions, and explicit voiding now use Supabase RPCs. Design follows the user-supplied Figma Make source ZIP. Added protected expense routes and Home entry point. Financial rows use bounded integer sen, RLS, membership-scoped composite foreign keys, deferred totals checks, request-key duplicate protection, expected versions, and atomic snapshots/activity events. See `docs/expenses-setup.md` for migration deployment and live acceptance checks. Hosted deployment and visual/device verification remain pending; no commit or push performed.
+
+## Welcome reference update
+
+The signed-out welcome screen now follows the attached mobile reference: mint gradient illustration, floating payment/bill cards, teal balance card, white copy area, local Inter typography, and signup/login actions. Illustration amounts are labeled as sample figures. Native safe areas and scrollable small-screen layouts are retained.
+
+The welcome screen now uses a fixed, non-scrolling safe-area layout. Artwork shrinks with available height and is omitted on short viewports; copy spacing compacts and both account actions stay in the layout. Landscape-sized viewports omit the descriptive paragraph.
