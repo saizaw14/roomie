@@ -1,14 +1,15 @@
-import { ActivityIndicator, Pressable, StyleSheet, Text, type PressableProps } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, type StyleProp, type TextStyle, type PressableProps } from 'react-native';
 import { authColors, authFonts } from '@/theme/auth-tokens';
 import { colors, radius } from '@/theme/tokens';
 
 type Props = Omit<PressableProps, 'children'> & {
   label: string;
+  labelStyle?: StyleProp<TextStyle>;
   appearance?: 'default' | 'auth';
   loading?: boolean;
   variant?: 'primary' | 'secondary';
 };
-export function Button({ label, appearance = 'default', loading = false, disabled, variant = 'primary', style, ...props }: Props) {
+export function Button({ label, labelStyle, appearance = 'default', loading = false, disabled, variant = 'primary', style, ...props }: Props) {
   const unavailable = disabled || loading;
   return (
     <Pressable {...props} accessibilityRole="button" accessibilityLabel={props.accessibilityLabel ?? label}
@@ -17,7 +18,7 @@ export function Button({ label, appearance = 'default', loading = false, disable
         state.pressed && styles.pressed, unavailable && styles.disabled,
         typeof style === 'function' ? style(state) : style]}>
       {loading ? <ActivityIndicator color={variant === 'primary' ? colors.white : colors.ink} /> :
-        <Text style={[styles.label, appearance === 'auth' && styles.authLabel, variant === 'secondary' && styles.secondaryLabel]}>{label}</Text>}
+        <Text style={[styles.label, appearance === 'auth' && styles.authLabel, variant === 'secondary' && styles.secondaryLabel, labelStyle]}>{label}</Text>}
     </Pressable>
   );
 }

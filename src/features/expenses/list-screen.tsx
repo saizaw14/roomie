@@ -1,6 +1,6 @@
 import { Link } from 'expo-router';
 import { useState } from 'react';
-import { Text,View,Pressable } from 'react-native';
+import { Text,View,Pressable,StyleSheet } from 'react-native';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useHouseholds } from '@/features/households/use-households';
@@ -33,7 +33,7 @@ export function ExpenseListScreen() {
     <View style={s.wrap}>{['All',...categories].map(c=><Choice key={c} label={c} selected={category===c} onPress={()=>setCategory(c)}/>)}</View>
     {rows.length===0?<ExpenseCard><Text style={s.body}>No expenses in this selection.</Text><Text style={s.small}>Add an expense or change your filters.</Text></ExpenseCard>:null}
     {rows.map((e,i)=><View key={e.id}>{i===0||rows[i-1].expense_date!==e.expense_date?<Text style={[s.bold,{marginBottom:10}]}>{e.expense_date}</Text>:null}
-     <Link href={{pathname:'/expenses/[id]',params:{id:e.id}}} asChild><Pressable accessibilityRole="button" accessibilityLabel={`${e.title}, ${money(e.amount_minor)}, ${e.status}`} style={[s.card,{backgroundColor:'white',borderWidth:1,flexDirection:'row',alignItems:'center',gap:10,opacity:e.status==='void'?0.72:1}]}>
+     <Link href={{pathname:'/expenses/[id]',params:{id:e.id}}} asChild><Pressable accessibilityRole="button" accessibilityLabel={`${e.title}, ${money(e.amount_minor)}, ${e.status}`} style={StyleSheet.flatten([s.card,{backgroundColor:'white',borderWidth:1,flexDirection:'row',alignItems:'center',gap:10,opacity:e.status==='void'?0.72:1}])}>
       <View style={[s.avatar,{borderRadius:13,width:42,height:42}]}><Icon name={e.status==='void'?'close':e.category==='Groceries'?'groceries':e.category==='Utilities'?'bolt':e.category==='Rent'?'building':'receipt'}/></View>
       <View style={{flex:1}}><Text style={s.bold}>{e.title}</Text><Text style={s.small}>Paid by {(query.data?.payers.filter(p=>p.expense_id===e.id).map(p=>name(p.member_id))??[]).join(', ')||'Loading…'}</Text><Text style={s.small}>{members.isSuccess?`Your share ${money(query.data?.splits.find(p=>p.expense_id===e.id&&p.member_id===myMember?.id)?.owed_minor??0)}`:'Your share is loading or unavailable'}</Text></View>
       <View><Text style={[s.bold,e.status==='void'&&{textDecorationLine:'line-through'}]}>{money(e.amount_minor)}</Text><Status status={e.status==='posted'&&e.version>1?'Revised':e.status}/></View><Icon name="chevron"/>
