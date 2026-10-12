@@ -2,7 +2,7 @@
 
 Shared living. Simpler money.
 
-Roomie is an Expo / React Native app for Malaysian roommates to track shared expenses, bills, balances, and repayments in MYR. The app includes the UI foundation, a fictional household preview, and account/profile flows plus milestone 3 household, invitation, and member flows backed by Supabase when configured.
+Roomie is an Expo / React Native app for Malaysian roommates to track shared expenses, bills, balances, and repayments in MYR. The app includes the UI foundation, a fictional household preview, and account/profile flows plus household, invitation, member, and milestone 4 expense flows backed by Supabase when configured.
 
 ## Run locally
 
@@ -38,6 +38,6 @@ This project uses npm / package-lock.json, Expo SDK 57, React Native 0.86, React
 
 Public configuration now points to the user’s Supabase project, and the profiles migration was applied through the SQL Editor. Live email confirmation testing is pending after reaching the default sender’s quota. Follow [the setup guide](docs/supabase-setup.md) to apply the profile migration and fill `.env.local` using `.env.example`. Missing configuration produces an honest setup state and disables account submissions. The implementation includes email signup/confirmation, sign-in, recovery, persistent sessions, logout, profile editing, and protected Home/Profile routes.
 
-The sample toggle only changes local screen state. No sample values are account balances; household creation/joining/invites/member views are implemented; expense and repayment operations remain future milestones. Apply the household migration before using those flows; the signed-in Home shows your selected household or an empty household state. Node 22.18+ is required for the dependency-free test runner (Node 24 is used here).
+The sample toggle only changes local screen state. No sample values are account balances; household creation/joining/invites/member views are implemented; expense creation, equal/exact/percentage splits, editing, voiding, and revision history are implemented. Balances and repayments remain later milestones. Apply the household and expense migrations before using those flows (see [expense setup](docs/expenses-setup.md)); the signed-in Home shows your selected household or an empty household state. Node 22.18+ is required for the dependency-free test runner (Node 24 is used here).
 
 Do not use the original starter reset script: it can replace the Roomie source. Some inactive starter helper components/assets are retained to preserve the original setup; the layout no longer mounts their tabs or animated overlay. `/explore` redirects to `/` for old links.

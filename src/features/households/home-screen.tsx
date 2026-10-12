@@ -37,8 +37,9 @@ export function HomeScreen() {
       <Text accessibilityRole="header" style={authStyles.title}>{households.current?.name ?? 'Room for your household.'}</Text>
       <Text style={authStyles.body}>{households.current ? `${households.current.currency} · ${households.membership?.role ?? 'member'}` : 'Create a household or join your roommates using an invitation.'}</Text>
       {households.current ? <Link href={{ pathname: '/households/[id]', params: { id: households.current.id } }} asChild><Button label="Members and settings" /></Link> : null}
-      <Text style={authStyles.body}>Expense tracking, balances, and bills are coming in later milestones.</Text>
+      <Text style={authStyles.body}>Record shared expenses now. Balance summaries and bills arrive in later milestones.</Text>
     </Card> : null}
+    <Link href="/expenses" asChild><Button label="View expenses / Add expense" /></Link>
     <Link href="/households" asChild><Button label="Your households / Switch household" variant="secondary" /></Link>
     <Link href="/households/create" asChild><Button label="Create household" /></Link>
     <Link href="/join" asChild><Button label="Join household" variant="secondary" /></Link>
