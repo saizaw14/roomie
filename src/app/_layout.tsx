@@ -19,6 +19,7 @@ function Navigation() {
       <Stack.Screen name="login" /><Stack.Screen name="signup" />
     </Stack.Protected>
     <Stack.Protected guard={!!session && !recovering}>
+      <Stack.Screen name="expenses/index" /><Stack.Screen name="expenses/create" /><Stack.Screen name="expenses/edit" /><Stack.Screen name="expenses/[id]" />
       <Stack.Screen name="home" /><Stack.Screen name="profile" />
       <Stack.Screen name="households/index" /><Stack.Screen name="households/create" /><Stack.Screen name="households/[id]" />
     </Stack.Protected>
