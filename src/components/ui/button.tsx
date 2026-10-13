@@ -1,15 +1,17 @@
-import { ActivityIndicator, Pressable, StyleSheet, Text, type StyleProp, type TextStyle, type PressableProps } from 'react-native';
+import type { ReactNode } from 'react';
+import { View, ActivityIndicator, Pressable, StyleSheet, Text, type StyleProp, type TextStyle, type PressableProps } from 'react-native';
 import { authColors, authFonts } from '@/theme/auth-tokens';
 import { colors, radius } from '@/theme/tokens';
 
 type Props = Omit<PressableProps, 'children'> & {
   label: string;
+  leadingIcon?: ReactNode;
   labelStyle?: StyleProp<TextStyle>;
   appearance?: 'default' | 'auth';
   loading?: boolean;
   variant?: 'primary' | 'secondary';
 };
-export function Button({ label, labelStyle, appearance = 'default', loading = false, disabled, variant = 'primary', style, ...props }: Props) {
+export function Button({ label, labelStyle, leadingIcon, appearance = 'default', loading = false, disabled, variant = 'primary', style, ...props }: Props) {
   const unavailable = disabled || loading;
   return (
     <Pressable {...props} accessibilityRole="button" accessibilityLabel={props.accessibilityLabel ?? label}
@@ -18,11 +20,12 @@ export function Button({ label, labelStyle, appearance = 'default', loading = fa
         state.pressed && styles.pressed, unavailable && styles.disabled,
         typeof style === 'function' ? style(state) : style]}>
       {loading ? <ActivityIndicator color={variant === 'primary' ? colors.white : colors.ink} /> :
-        <Text style={[styles.label, appearance === 'auth' && styles.authLabel, variant === 'secondary' && styles.secondaryLabel, labelStyle]}>{label}</Text>}
+        <View style={styles.content}>{leadingIcon}<Text style={[styles.label, appearance === 'auth' && styles.authLabel, variant === 'secondary' && styles.secondaryLabel, labelStyle]}>{label}</Text></View>}
     </Pressable>
   );
 }
 const styles = StyleSheet.create({
+  content: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   auth: { minHeight: 50, borderRadius: 13, paddingVertical: 12, backgroundColor: authColors.primary },
   authLabel: { fontFamily: authFonts.bold, fontSize: 14, fontWeight: 'normal' },
   base: { minHeight: 52, paddingHorizontal: 24, paddingVertical: 14, borderRadius: radius.input,

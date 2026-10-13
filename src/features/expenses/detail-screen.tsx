@@ -15,7 +15,7 @@ export function ExpenseDetailScreen() {
  const params=useLocalSearchParams<{id?:string}>();const id=typeof params.id==='string'?params.id:'';const query=useExpense(id);
  const {session}=useAuth();const houses=useHouseholds();const members=useExpenseMembers(query.data?.expense.household_id??'');const client=useQueryClient();
  const [confirm,setConfirm]=useState(false);const [reason,setReason]=useState('');const [error,setError]=useState<string|null>(null);const [expanded,setExpanded]=useState<number|null>(null);
- const mutation=useMutation({mutationFn:()=>voidExpense(query.data!.expense,reason),retry:false,onSuccess:async()=>{setConfirm(false);await Promise.all([client.invalidateQueries({queryKey:['expenses']}),client.invalidateQueries({queryKey:['expense']})]);}});
+ const mutation=useMutation({mutationFn:()=>voidExpense(query.data!.expense,reason),retry:false,onSuccess:async()=>{setConfirm(false);await Promise.all([client.invalidateQueries({queryKey:['activity']}),client.invalidateQueries({queryKey:['expenses']}),client.invalidateQueries({queryKey:['expense']})]);}});
  const e=query.data?.expense;const name=(member:string)=>members.data?.find(m=>m.id===member)?.display_name??'Former household member';
  const actor=(user:string)=>members.data?.find(m=>m.user_id===user)?.display_name??'Household member';
  const allowed=e?.status==='posted'&&(e.created_by===session?.user.id||houses.data?.memberships.some(m=>m.household_id===e.household_id&&m.user_id===session?.user.id&&m.role==='owner'));
