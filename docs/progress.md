@@ -80,3 +80,7 @@ Expense list, three-step create/edit flow, equal/exact/percentage splitting, exp
 The signed-out welcome screen now follows the attached mobile reference: mint gradient illustration, floating payment/bill cards, teal balance card, white copy area, local Inter typography, and signup/login actions. Illustration amounts are labeled as sample figures. Native safe areas and scrollable small-screen layouts are retained.
 
 The welcome screen now uses a fixed, non-scrolling safe-area layout. Artwork shrinks with available height and is omitted on short viewports; copy spacing compacts and both account actions stay in the layout. Landscape-sized viewports omit the descriptive paragraph.
+
+## Home dashboard design (2026-10-13)
+
+Home now follows the published Figma Make dashboard with a household header, gradient expense-balance card, upcoming-bills availability state, real expense activity, four-item navigation, and floating Add Expense. Expense-only balances derive from posted payer/share rows and exclude voids; unimplemented bill/repayment/notification controls explain availability without sample financial records. Activity refreshes after create/edit/void. See `docs/home-dashboard.md` for data boundaries and pending device verification.
