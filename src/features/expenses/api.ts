@@ -1,6 +1,6 @@
 import { requireSupabase } from '@/lib/supabase';
 import { safeMinor, parseMinor, type Allocation, type SplitMethod } from './domain';
-import { expenseSchema, type ExpenseValues } from './validation';
+import { makeExpenseSchema, type ExpenseValues } from './validation';
 import type { Expense, ExpensePayer, ExpenseSplit } from '@/types/database';
 async function readPages<T>(fetch: (from:number,to:number)=>PromiseLike<{data:T[]|null;error:unknown}>) {
  const rows:T[]=[];
@@ -41,9 +41,9 @@ export async function getExpense(id: string) {
  }
  throw new Error('Expense is being changed. Refresh its details in a moment.');
 }
-export async function saveExpense(household:string, values:ExpenseValues, method:SplitMethod, participants:Allocation[], request:string, original?:Expense) {
- const v=expenseSchema.parse(values);
- const amount=parseMinor(v.amount);
+export async function saveExpense(household:string, values:ExpenseValues, method:SplitMethod, participants:Allocation[], request:string, original?:Expense,currency='MYR') {
+ const v=makeExpenseSchema(currency).parse(values);
+ const amount=parseMinor(v.amount,false,currency);
  const args={p_household:household,p_title:v.title,p_category:v.category,p_amount:amount,p_date:v.date,p_notes:v.notes,p_method:method,p_payers:[{member_id:v.payer,value:amount}],p_participants:participants.map(p=>method==='equal'?{member_id:p.member_id}:{member_id:p.member_id,value:p.value!})};
  const result=original?await requireSupabase().rpc('roomie_update_expense',{...args,p_id:original.id,p_version:original.version}):await requireSupabase().rpc('roomie_create_expense',{...args,p_request:request});
  if(result.error) throw result.error; return result.data;

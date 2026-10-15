@@ -6,6 +6,7 @@ import { QueryProvider } from '@/lib/query-provider';
 import { LoadingScreen } from '@/components/ui/loading-screen';
 import { InviteIntentProvider } from '@/features/households/invite-intent';
 import { colors } from '@/theme/tokens';
+const householdSheetOptions = { presentation: 'transparentModal', animation: 'fade', gestureEnabled: false, contentStyle: { backgroundColor: 'transparent' } } as const;
 function Navigation() {
   const { ready, session, recovering } = useAuth();
   if (!ready) return <LoadingScreen />;
@@ -14,14 +15,14 @@ function Navigation() {
     <Stack.Screen name="explore" />
     <Stack.Screen name="auth/callback" />
     <Stack.Screen name="forgot-password" />
-    <Stack.Screen name="join" />
+    <Stack.Screen name="join" options={householdSheetOptions} />
     <Stack.Protected guard={!session}>
       <Stack.Screen name="login" /><Stack.Screen name="signup" />
     </Stack.Protected>
     <Stack.Protected guard={!!session && !recovering}>
       <Stack.Screen name="expenses/index" /><Stack.Screen name="expenses/create" /><Stack.Screen name="expenses/edit" /><Stack.Screen name="expenses/[id]" />
       <Stack.Screen name="home" /><Stack.Screen name="profile" />
-      <Stack.Screen name="households/index" /><Stack.Screen name="households/create" /><Stack.Screen name="households/[id]" />
+      <Stack.Screen name="households/index" options={householdSheetOptions} /><Stack.Screen name="households/create" options={householdSheetOptions} /><Stack.Screen name="households/[id]" />
     </Stack.Protected>
     <Stack.Protected guard={!!session}>
       <Stack.Screen name="reset-password" />
