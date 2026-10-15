@@ -85,6 +85,13 @@ The welcome screen now uses a fixed, non-scrolling safe-area layout. Artwork shr
 
 Home now follows the published Figma Make dashboard with a household header, gradient expense-balance card, upcoming-bills availability state, real expense activity, four-item navigation, and floating Add Expense. Expense-only balances derive from posted payer/share rows and exclude voids; unimplemented bill/repayment/notification controls explain availability without sample financial records. Activity refreshes after create/edit/void. See `docs/home-dashboard.md` for data boundaries and pending device verification.
 
+## Personal profile dashboard (2026-10-15)
+
+Replaced the old profile form page with the Figma Make Me dashboard: avatar/name/email, household role badge, Household and Account menu cards, permissions note, logout, and four-item bottom navigation. Uses the supplied Figma source layout and icon paths with existing Inter fonts and design tokens. Profile editing, password changes, members, expense activity, and logout confirmation open in mobile bottom sheets. Names, membership roles, activity and email come from the signed-in account; profile and password updates use the existing validated Supabase flows. Notifications and bills show availability messages; avatar uploads remain deferred. Existing household settings/invitation routes are retained. No migration or dependency changes.
+
+Visual/device acceptance remains pending because computer-use permissions are unavailable. Check Me in Expo Go, keyboard behavior in both edit forms, save/retry states, members/activity, and logout cancellation/confirmation.
+
+Validation: Expo lint and TypeScript passed; all 56 tests passed; iOS, Android, and web export passed to `/private/tmp/roomie-profile-export`. React component review covered unconditional hooks, query/account scoping, loading/retry states, button labels, modal dismissal, and preservation of form validation. No live account changes were made during verification.
 ## Household bottom sheets (2026-10-15)
 
 Replaced the legacy household selector, create, and join screens with the Figma-style transparent modal sheet flow. Existing entry points now share the same rounded sheet and in-sheet navigation. Real household selection, Supabase mutations, invite intent, and validation are preserved. No new database migration or dependency is required; native visual verification remains pending.
