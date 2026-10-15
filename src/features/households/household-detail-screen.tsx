@@ -12,7 +12,7 @@ import type { HouseholdInvite } from '@/types/database';
 import { createInvite, listInvites, listMembers, renameHousehold, revokeInvite } from './api';
 import { householdError, householdSchema, inviteSchema } from './validation';
 import { useHouseholds } from './use-households';
-function Settings({ id, name }: { id: string; name: string }) {
+function Settings({ id, name, currency }: { id: string; name: string; currency: string }) {
  const [value, setValue] = useState(name);
  const [error, setError] = useState<string | null>(null);
  const [saved, setSaved] = useState(false);
@@ -22,7 +22,7 @@ function Settings({ id, name }: { id: string; name: string }) {
  } });
  return <Card style={authStyles.form}><Text accessibilityRole="header" style={authStyles.title}>Settings</Text>
   <Input label="Household name" value={value} onChangeText={v => { setValue(v); setSaved(false); }} maxLength={80} editable={!mutation.isPending} />
-  <Text style={authStyles.body}>Currency: MYR (RM)</Text>
+  <Text style={authStyles.body}>Currency: {currency} (fixed)</Text>
   {error ? <Text accessibilityRole="alert" style={authStyles.error}>{error}</Text> : null}
   {saved ? <Text accessibilityLiveRegion="polite" style={authStyles.success}>Household name saved.</Text> : null}
   <Button label="Save name" loading={mutation.isPending} onPress={() => {
@@ -115,7 +115,7 @@ export function HouseholdDetailScreen() {
     {members.data?.map(m => <Text key={m.id} style={authStyles.body}>{m.display_name}{m.user_id === user ? ' (you)' : ''} · {m.role} · {m.status}</Text>)}
     {members.isSuccess ? <Button label="Refresh members" variant="secondary" loading={members.isFetching} onPress={() => void members.refetch()} /> : null}
    </Card>
-   {owner ? <><Settings key={id} id={id} name={household.name} /><Invitations id={id} user={user} /></> : <Text style={authStyles.body}>Your household owner manages invitations and settings.</Text>}
+   {owner ? <><Settings key={id} id={id} name={household.name} currency={household.currency} /><Invitations id={id} user={user} /></> : <Text style={authStyles.body}>Your household owner manages invitations and settings.</Text>}
    <Text style={authStyles.body}>Leaving, member removal, and ownership transfer will be added with safeguards for household debts and history.</Text>
   </> : null}
  </AuthScreen>;

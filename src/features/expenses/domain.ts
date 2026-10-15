@@ -1,18 +1,21 @@
+import { currencyInfo } from '../../utils/currencies.ts';
 export const MAX_MINOR = 1_000_000_000;
 export const categories = ['Groceries', 'Utilities', 'Rent', 'Transport', 'Other'] as const;
 export type SplitMethod = 'equal' | 'exact' | 'percentage';
 export type Allocation = { member_id: string; value?: number };
-export function parseMinor(input: string, allowZero = false): number {
-  if (!/^(0|[1-9]\d{0,7})(\.\d{1,2})?$/.test(input.trim())) throw new Error('Enter an amount with at most two decimal places.');
-  const [whole, fraction = ''] = input.trim().split('.');
-  const value = Number(whole) * 100 + Number(fraction.padEnd(2, '0'));
-  if (!Number.isSafeInteger(value) || value > MAX_MINOR || value < (allowZero ? 0 : 1)) throw new Error('Amount must be between RM0.01 and RM10,000,000.00.');
-  return value;
+export function parseMinor(input: string, allowZero = false, currency = 'MYR'): number {
+ const digits=currencyInfo(currency).decimals;
+ const pattern=digits===0?/^(0|[1-9]\d{0,9})$/:new RegExp(`^(0|[1-9]\\d{0,9})(\\.\\d{1,${digits}})?$`);
+ if(!pattern.test(input.trim()))throw new Error(`Enter an amount with at most ${digits} decimal places for ${currency}.`);
+ const [whole,fraction='']=input.trim().split('.');
+ const value=Number(whole)*10**digits+Number(fraction.padEnd(digits,'0'));
+ if(!Number.isSafeInteger(value)||value>MAX_MINOR||value<(allowZero?0:1))throw new Error(`Amount must be positive and at most ${MAX_MINOR} minor units.`);
+ return value;
 }
 export function parseBps(input: string): number {
-  const value = parseMinor(input, true);
-  if (value > 10000) throw new Error('Enter a percentage between 0 and 100.');
-  return value;
+ const value = parseMinor(input, true, 'MYR');
+ if (value > 10000) throw new Error('Enter a percentage between 0 and 100.');
+ return value;
 }
 export function safeMinor(value: number | string): number {
   if (typeof value === 'string' && !/^\d+$/.test(value)) throw new Error('Invalid server amount.');
@@ -20,8 +23,11 @@ export function safeMinor(value: number | string): number {
   if (!Number.isSafeInteger(result) || result < 0 || result > MAX_MINOR) throw new Error('Server amount exceeds supported bounds.');
   return result;
 }
-export function decimal(value: number): string { return `${Math.trunc(value / 100)}.${String(value % 100).padStart(2, '0')}`; }
-export function money(value: number): string { return `RM${decimal(value)}`; }
+export function decimal(value: number,currency='MYR'): string {
+ const digits=currencyInfo(currency).decimals;const factor=10**digits;
+ return digits===0?String(value):`${Math.trunc(value/factor)}.${String(value%factor).padStart(digits,'0')}`;
+}
+export function money(value: number,currency='MYR'): string { return `${currency==='MYR'?'RM':currency+' '}${decimal(value,currency)}`; }
 export function splitExpense(amount: number, method: SplitMethod, participants: Allocation[]) {
   if (!Number.isSafeInteger(amount) || amount < 1 || amount > MAX_MINOR || participants.length < 1 || participants.length > 50 || new Set(participants.map(p => p.member_id.toLowerCase())).size !== participants.length) throw new Error('Select unique participants and a valid amount.');
   if (!['equal','exact','percentage'].includes(method)) throw new Error('Invalid split method.');
