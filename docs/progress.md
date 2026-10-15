@@ -92,3 +92,10 @@ Replaced the old profile form page with the Figma Make Me dashboard: avatar/name
 Visual/device acceptance remains pending because computer-use permissions are unavailable. Check Me in Expo Go, keyboard behavior in both edit forms, save/retry states, members/activity, and logout cancellation/confirmation.
 
 Validation: Expo lint and TypeScript passed; all 56 tests passed; iOS, Android, and web export passed to `/private/tmp/roomie-profile-export`. React component review covered unconditional hooks, query/account scoping, loading/retry states, button labels, modal dismissal, and preservation of form validation. No live account changes were made during verification.
+## Household bottom sheets (2026-10-15)
+
+Replaced the legacy household selector, create, and join screens with the Figma-style transparent modal sheet flow. Existing entry points now share the same rounded sheet and in-sheet navigation. Real household selection, Supabase mutations, invite intent, and validation are preserved. No new database migration or dependency is required; native visual verification remains pending.
+
+## Currency selection and Join icon (2026-10-15)
+
+Added the plus icon to the switch sheet's Join household action and a searchable ISO currency selector to household creation. Database catalog migration and client parsing/formatting now support 165 ISO codes with defined minor-unit precision. Expenses and dashboard/history amounts follow the immutable household currency; existing households stay MYR. No conversion or mixed-currency totals. Apply `docs/supabase-dashboard-currencies.sql` after expenses; see `docs/currencies.md`. Hosted migration and device checks are pending.

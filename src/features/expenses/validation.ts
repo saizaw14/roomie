@@ -1,9 +1,10 @@
 import { z } from 'zod';
 import { categories, parseMinor, validDate } from './domain';
-export const expenseSchema = z.object({
- title: z.string().trim().min(1,'Enter a title.').max(120), amount: z.string().refine(value => { try { parseMinor(value); return true; } catch { return false; } }, 'Enter RM0.01–RM10,000,000 with at most two decimals.'),
+export const makeExpenseSchema = (currency = 'MYR') => z.object({
+ title: z.string().trim().min(1,'Enter a title.').max(120), amount: z.string().refine(value => { try { parseMinor(value,false,currency); return true; } catch { return false; } }, `Enter a valid positive ${currency} amount using its supported decimal places.`),
  category: z.enum(categories), date: z.string().refine(validDate,'Use a valid date (YYYY-MM-DD), from 2000 to 2100.'), notes: z.string().max(1000), payer: z.string().uuid('Choose a payer.'),
 });
+export const expenseSchema = makeExpenseSchema();
 export type ExpenseValues = z.infer<typeof expenseSchema>;
 export function expenseError(error: unknown) {
  const code = typeof error==='object' && error!==null && 'code' in error ? String(error.code) : '';

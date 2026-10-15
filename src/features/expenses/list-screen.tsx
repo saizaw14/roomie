@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useHouseholds } from '@/features/households/use-households';
 import { useAuth } from '@/lib/auth-context';
-import { categories,money,localToday,validDate } from './domain';
+import { categories,money as formatMoney,localToday,validDate } from './domain';
 import { useExpenses,useExpenseMembers } from './hooks';
 import { expenseError } from './validation';
 import { ExpenseScreen,ExpenseCard,Choice,Status,Icon,s } from './ui';
@@ -13,6 +13,7 @@ export function ExpenseListScreen() {
  const house=useHouseholds();const {session}=useAuth();const query=useExpenses(house.current?.id??'');const members=useExpenseMembers(house.current?.id??'');
  const [category,setCategory]=useState('All');const [period,setPeriod]=useState('This month');const [status,setStatus]=useState('All');const [filters,setFilters]=useState(false);
  const [start,setStart]=useState('');const [end,setEnd]=useState('');
+ const money=(value:number)=>formatMoney(value,house.current?.currency??'MYR');
  const today=localToday();const month=today.slice(0,7);const last=new Date(`${month}-01T12:00:00`);last.setMonth(last.getMonth()-1);const lastMonth=`${last.getFullYear()}-${String(last.getMonth()+1).padStart(2,'0')}`;
  const validRange=period!=='Custom dates'||(validDate(start)&&validDate(end)&&start<=end);
  const rows=(query.data?.expenses??[]).filter(e=>(category==='All'||e.category===category)&&(status==='All'||e.status===status.toLowerCase())&&(period==='All time'||(period==='This month'&&e.expense_date.startsWith(month))||(period==='Last month'&&e.expense_date.startsWith(lastMonth))||(period==='Custom dates'&&validRange&&e.expense_date>=start&&e.expense_date<=end))).sort((a,b)=>b.expense_date.localeCompare(a.expense_date)||a.id.localeCompare(b.id));

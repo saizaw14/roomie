@@ -9,7 +9,7 @@ import { useHouseholds } from '@/features/households/use-households';
 import { useExpense,useExpenseMembers } from './hooks';
 import { voidExpense } from './api';
 import { expenseError } from './validation';
-import { money,safeMinor,isExpenseId } from './domain';
+import { money as formatMoney,safeMinor,isExpenseId } from './domain';
 import { ExpenseScreen,ExpenseCard,Row,Avatar,Status,Choice,Icon,s } from './ui';
 export function ExpenseDetailScreen() {
  const params=useLocalSearchParams<{id?:string}>();const id=typeof params.id==='string'?params.id:'';const query=useExpense(id);
@@ -18,6 +18,7 @@ export function ExpenseDetailScreen() {
  const mutation=useMutation({mutationFn:()=>voidExpense(query.data!.expense,reason),retry:false,onSuccess:async()=>{setConfirm(false);await Promise.all([client.invalidateQueries({queryKey:['activity']}),client.invalidateQueries({queryKey:['expenses']}),client.invalidateQueries({queryKey:['expense']})]);}});
  const e=query.data?.expense;const name=(member:string)=>members.data?.find(m=>m.id===member)?.display_name??'Former household member';
  const actor=(user:string)=>members.data?.find(m=>m.user_id===user)?.display_name??'Household member';
+ const money=(value:number)=>formatMoney(value,e?.currency??'MYR');
  const allowed=e?.status==='posted'&&(e.created_by===session?.user.id||houses.data?.memberships.some(m=>m.household_id===e.household_id&&m.user_id===session?.user.id&&m.role==='owner'));
  async function confirmVoid(){setError(null);try{await mutation.mutateAsync();}catch(failure){setError(expenseError(failure));}}
  return <ExpenseScreen title="Expense details" subtitle={e?`Posted ${e.expense_date} · ${actor(e.created_by)}`:undefined} sheet>
@@ -39,7 +40,8 @@ function RevisionContent({snapshot,name}:{snapshot:unknown;name:(id:string)=>str
  const object=(value:unknown):Record<string,unknown>=>value!==null&&typeof value==='object'&&!Array.isArray(value)?value as Record<string,unknown>:{};
  const record=object(snapshot);const expense=object(record.expense);
  const text=(value:unknown)=>typeof value==='string'?value:'';
- const format=(value:unknown)=>{try{return money(safeMinor(typeof value==='number'||typeof value==='string'?value:'invalid'));}catch{return 'Unavailable';}};
+ const currency=typeof expense.currency==='string'?expense.currency:'MYR';
+ const format=(value:unknown)=>{try{return formatMoney(safeMinor(typeof value==='number'||typeof value==='string'?value:'invalid'),currency);}catch{return 'Unavailable';}};
  const payers=Array.isArray(record.payers)?record.payers:[];const shares=Array.isArray(record.splits)?record.splits:[];
  return <View><Row label="Title" value={text(expense.title)}/><Row label="Amount" value={format(expense.amount_minor)}/><Row label="Date" value={text(expense.expense_date)}/><Row label="Category" value={text(expense.category)}/><Row label="Split" value={text(expense.split_method)}/><Row label="Status" value={text(expense.status)}/>
   {text(expense.notes)?<Row label="Notes" value={text(expense.notes)}/>:null}

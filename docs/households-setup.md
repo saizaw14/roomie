@@ -53,3 +53,13 @@ Before calling the live milestone verified, use two confirmed test accounts to:
 6. Verify native share/deep linking, keyboard/safe-area behavior, network failures, and account switching.
 
 Financial totals are intentionally absent until expense/balance migrations exist. No fake zero balances are shown.
+
+## Household sheet update (2026-10-15)
+
+The former household selector/create/join pages now compose the shared Figma-style `HouseholdSheetScreen`. Their existing routes present as transparent modals, with a dimmed backdrop, rounded top corners, handle, header, and keyboard-aware scrollable content. The selector displays real household names, active-member counts, currency, and selection checkmarks. Join/Create switch the current sheet contents rather than opening the old pages. Closing returns to the underlying route; direct entry falls back to Home or Welcome. Choosing, creating, or joining selects that household and refreshes the existing queries.
+
+Public invitation links still require explicit signed-in redemption. Full 32-character server codes and invitation links are accepted; the prototype's short sample codes and unauthenticated household previews are not used. The route wrappers contain no legacy AuthScreen-based household forms. No database changes or dependencies were introduced.
+
+Close/backdrop/form navigation is disabled while a submit is pending. If system Back unmounts a form during a request, a later result refreshes household data without navigating an unrelated screen. Rapid local submissions are guarded; automatic mutation retries remain disabled. Gesture-dismiss is disabled at the navigator level; close, backdrop, and system Back provide dismissal.
+
+Lint/typecheck, existing tests, and platform exports pass. Visual/device verification remains pending: check Home/Expenses/Profile entry points, switching, create/join validation, deep links while signed out, keyboard visibility, short displays, safe-area padding, backdrop dismissal, and system Back. Runtime permission was unavailable for automated visual checks.

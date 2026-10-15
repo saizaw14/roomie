@@ -24,9 +24,9 @@ export async function listInvites(id: string) {
  if (error) throw error;
  return data;
 }
-export async function createHousehold(name: string) {
+export async function createHousehold(name: string, currency: string) {
  const values = householdSchema.parse({ name });
- const { data, error } = await requireSupabase().rpc('roomie_create_household', { p_name: values.name });
+ const { data, error } = await requireSupabase().rpc('roomie_create_household', { p_name: values.name, p_currency: currency });
  if (error) throw error;
  return data;
 }
