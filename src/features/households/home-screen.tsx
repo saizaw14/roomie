@@ -7,8 +7,6 @@ import { Button } from '@/components/ui/button';
 import { LoadingScreen } from '@/components/ui/loading-screen';
 import { useRoomieFonts } from '@/hooks/use-roomie-fonts';
 import { useProfile } from '@/features/profile/use-profile';
-import { useAuth } from '@/lib/auth-context';
-import { authErrorMessage } from '@/features/auth/error-message';
 import { useExpenses,useExpenseMembers } from '@/features/expenses/hooks';
 import { expenseError } from '@/features/expenses/validation';
 import { money as formatMoney,safeMinor } from '@/features/expenses/domain';
@@ -22,18 +20,16 @@ import type { ActivityEvent } from '@/types/database';
 
 export function HomeScreen() {
  const [loaded,fontError]=useRoomieFonts();
- const {signOut}=useAuth();const profile=useProfile();const houses=useHouseholds();const intent=useInviteIntent();
+ const profile=useProfile();const houses=useHouseholds();const intent=useInviteIntent();
  const house=houses.current;const expenses=useExpenses(house?.id??'');const members=useExpenseMembers(house?.id??'');
  const [expanded,setExpanded]=useState(false);const activity=useActivity(house?.id??'',expanded);
  const scroll=useRef<ScrollView>(null);
- const [notice,setNotice]=useState<'bills'|'notifications'|'settle'|null>(null);const [error,setError]=useState<string|null>(null);const [busy,setBusy]=useState(false);
+ const [notice,setNotice]=useState<'bills'|'notifications'|'settle'|null>(null);
  function openNotice(value:'bills'|'notifications'|'settle'){setNotice(value);scroll.current?.scrollTo({y:0,animated:true});}
  let summary:ReturnType<typeof expenseSummary>|null=null;let balanceError:string|null=null;
  if(expenses.isSuccess&&houses.membership)try{summary=expenseSummary(expenses.data,houses.membership.id);}catch(failure){balanceError=expenseError(failure);}
  const money=(value:number)=>formatMoney(value,house?.currency??'MYR');
  const memberName=(id:string)=>members.data?.find(m=>m.user_id===id)?.display_name??'Household member';
- async function logout(){setBusy(true);setError(null);try{await signOut();}catch(failure){setError(authErrorMessage(failure));}finally{setBusy(false);}}
- async function refresh(){await Promise.all([houses.refetch(),profile.refetch(),...(house?[expenses.refetch(),members.refetch(),activity.refetch()]:[])]);}
  if(!loaded&&!fontError)return <LoadingScreen/>;
  return <View style={s.canvas}><SafeAreaView style={s.safe}>
   <View style={s.header}>
@@ -59,7 +55,7 @@ export function HomeScreen() {
     <View style={s.balance}>
      <Image source={require('../../../assets/images/dashboard/balance-background.svg')} style={StyleSheet.absoluteFill} contentFit="fill"/>
      <View style={s.balanceTop}><View style={s.balanceIcon}><DashboardIcon name={summary&&summary.net<0?'arrowDown':'arrowUp'} color="white"/></View><Text style={s.balanceLabel}>{summary?summary.net>0?'You are owed':summary.net<0?'You owe':'Expense balance':'Expense balance'}</Text><Text style={s.badge}>{house.currency}</Text></View>
-     {expenses.isPending?<><Text style={[s.amount,{fontSize:25}]}>Loading…</Text><Text style={s.balanceHint}>Fetching your posted expenses</Text></>:expenses.isError||balanceError?<><Text style={[s.amount,{fontSize:25}]}>Unavailable</Text><Text accessibilityRole="alert" style={s.balanceHint}>{balanceError??expenseError(expenses.error)}</Text></>:summary?<><Text style={s.amount}>{money(Math.abs(summary.net))}</Text><Text style={s.balanceHint}>{summary.count===0?'No posted expenses yet':`From ${summary.count} posted expense${summary.count===1?'':'s'}`}</Text></>:<Text style={s.balanceHint}>Your membership is unavailable. Refresh to continue.</Text>}
+     {expenses.isPending?<><Text style={[s.amount,{fontSize:25}]}>Loading…</Text><Text style={s.balanceHint}>Fetching your posted expenses</Text></>:expenses.isError||balanceError?<><Text style={[s.amount,{fontSize:25}]}>Unavailable</Text><Text accessibilityRole="alert" style={s.balanceHint}>{balanceError??expenseError(expenses.error)}</Text></>:summary?<><Text style={s.amount}>{money(Math.abs(summary.net))}</Text><Text style={s.balanceHint}>{summary.count===0?'No posted expenses yet':`From ${summary.count} posted expense${summary.count===1?'':'s'}`}</Text></>:<Text style={s.balanceHint}>Your membership is unavailable. Reopen this household to try again.</Text>}
      <View style={s.balanceActions}><Link href={{pathname:'/expenses/create',params:{household:house.id}}} asChild><Button appearance="auth" label="Add expense" leadingIcon={<DashboardIcon name="plus" color="#0b5f59"/>} style={s.primaryAction} labelStyle={s.primaryLabel}/></Link><Button appearance="auth" label="Settle up" leadingIcon={<DashboardIcon name="wallet" color="white"/>} variant="secondary" style={s.secondaryAction} labelStyle={s.secondaryLabel} onPress={()=>openNotice('settle')}/></View>
     </View>
     <View style={s.note}><DashboardIcon name="shield" color="#647084"/><Text style={[s.small,{flex:1}]}>This balance includes posted expenses. Repayments will be included when available.</Text></View>
@@ -71,11 +67,8 @@ export function HomeScreen() {
      {expanded&&activity.data?.length===50?<Text style={s.small}>Showing the latest 50 changes. Open an expense for its complete revision history.</Text>:null}
     </DashboardCard>
     {members.isError?<Text style={s.small}>Member names could not be loaded. Activity still shows your saved records.</Text>:null}
-    <Link href={{pathname:'/households/[id]',params:{id:house.id}}} asChild><Button appearance="auth" variant="secondary" label="Members and household settings"/></Link>
    </>:null}
    {profile.isError?<DashboardCard><Text style={s.small}>Your profile could not be loaded.</Text><Button appearance="auth" label="Retry profile" variant="secondary" onPress={()=>void profile.refetch()}/></DashboardCard>:null}
-   <Button appearance="auth" label="Refresh dashboard" variant="secondary" loading={houses.isFetching||expenses.isFetching||activity.isFetching} onPress={()=>void refresh()}/>
-   {error?<Text accessibilityRole="alert" style={s.error}>{error}</Text>:null}<Button appearance="auth" label="Log out" variant="secondary" loading={busy} onPress={()=>void logout()}/>
   </ScrollView>
   {house?<Link href={{pathname:'/expenses/create',params:{household:house.id}}} asChild><Pressable accessibilityRole="button" accessibilityLabel="Add expense" style={s.fab}><DashboardIcon name="plus" color="white"/></Pressable></Link>:null}
   <View style={s.nav}>

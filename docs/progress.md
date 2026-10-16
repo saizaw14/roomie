@@ -99,3 +99,11 @@ Replaced the legacy household selector, create, and join screens with the Figma-
 ## Currency selection and Join icon (2026-10-15)
 
 Added the plus icon to the switch sheet's Join household action and a searchable ISO currency selector to household creation. Database catalog migration and client parsing/formatting now support 165 ISO codes with defined minor-unit precision. Expenses and dashboard/history amounts follow the immutable household currency; existing households stay MYR. No conversion or mixed-currency totals. Apply `docs/supabase-dashboard-currencies.sql` after expenses; see `docs/currencies.md`. Hosted migration and device checks are pending.
+
+## Members and settings redesign (2026-10-16)
+
+Replaced the old household detail page with the existing Figma-style bottom-sheet shell. Members use compact colored initial avatars, real active-member counts, owner badges, and an Invite a member action. Settings provide the household name editor, fixed currency name/code, invitation limits, real invitation codes/links, copy/share, expiry/use status, and revocation. Membership history and deferred departure/transfer safeguards remain visible without simulated controls. Home and Me now share this route; Me’s Settings menu opens the settings section directly. Owner-only controls retain the existing server authorization and validation. No migration or dependency changes.
+
+Reference: Figma Make source ZIP supplied by the user, members/settings branches and corresponding CSS. The Figma connector returns source links but does not support Make screenshots. Browser visual checks were attempted; Computer Use permissions are not granted. Live invitation creation/sharing/revocation was not performed during this UI task.
+
+Validation: Expo lint and TypeScript passed, all 58 tests passed. React review checked unconditional hooks, role/query scoping, error/retry states, form labels, and disabling sheet dismissal and section switching while mutations are pending.
