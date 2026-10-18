@@ -9,9 +9,9 @@ import { authColors as c,authFonts as f } from '@/theme/auth-tokens';
 export function closeHouseholdSheet(signedIn:boolean) {
  if(router.canGoBack())router.back();else router.replace(signedIn?'/home':'/');
 }
-export function HouseholdSheet({title,subtitle,busy=false,onBack,children}:PropsWithChildren<{title:string;subtitle:string;busy?:boolean;onBack?:()=>void}>) {
+export function HouseholdSheet({title,subtitle,busy=false,onBack,onClose,children}:PropsWithChildren<{title:string;subtitle:string;busy?:boolean;onBack?:()=>void;onClose?:()=>void}>) {
  const [loaded,error]=useRoomieFonts();const {session}=useAuth();const insets=useSafeAreaInsets();const {height}=useWindowDimensions();
- const close=()=>{if(!busy)closeHouseholdSheet(!!session);};
+ const close=()=>{if(!busy){if(onClose)onClose();else closeHouseholdSheet(!!session);}};
  return <View style={s.overlay}>
   <Pressable accessibilityRole="button" accessibilityLabel="Dismiss household sheet" disabled={busy} onPress={close} style={StyleSheet.absoluteFill}/>
   <KeyboardAvoidingView pointerEvents="box-none" style={s.position} behavior={Platform.OS==='ios'?'padding':'height'}>

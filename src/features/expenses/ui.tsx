@@ -8,7 +8,7 @@ import { LoadingScreen } from '@/components/ui/loading-screen';
 import { Card } from '@/components/ui/card';
 import { authColors as c,authFonts as f } from '@/theme/auth-tokens';
 export const icons={groceries:require('../../../assets/images/expenses/groceries.svg'),receipt:require('../../../assets/images/expenses/receipt.svg'),bolt:require('../../../assets/images/expenses/bolt.svg'),building:require('../../../assets/images/expenses/building.svg'),close:require('../../../assets/images/expenses/close.svg'),chevron:require('../../../assets/images/expenses/chevron.svg'),check:require('../../../assets/images/expenses/check.svg'),history:require('../../../assets/images/expenses/history.svg')};
-export function Icon({name}:{name:keyof typeof icons}) {return <Image source={icons[name]} style={{width:20,height:20}} contentFit="contain" />;}
+export function Icon({name,color}:{name:keyof typeof icons;color?:string}) {return <Image source={icons[name]} style={{width:20,height:20}} tintColor={color} contentFit="contain" />;}
 export function ExpenseScreen({title,subtitle,children,sheet=false}:PropsWithChildren<{title:string;subtitle?:string;sheet?:boolean}>) {
  const [loaded,error]=useFonts({RoomieInter:require('../../../assets/fonts/Inter-Regular.ttf'),RoomieInterMedium:require('../../../assets/fonts/Inter-Medium.ttf'),RoomieInterSemiBold:require('../../../assets/fonts/Inter-SemiBold.ttf'),RoomieInterBold:require('../../../assets/fonts/Inter-Bold.ttf'),RoomieInterExtraBold:require('../../../assets/fonts/Inter-ExtraBold.ttf')});
  if(!loaded&&!error) return <LoadingScreen />;
@@ -22,7 +22,7 @@ export function ExpenseScreen({title,subtitle,children,sheet=false}:PropsWithChi
 export function ExpenseCard({children}:PropsWithChildren) {return <Card style={s.card}>{children}</Card>;}
 export function Choice({label,selected,onPress,disabled=false}:{label:string;selected:boolean;onPress:()=>void;disabled?:boolean}) {return <Pressable accessibilityRole="button" accessibilityState={{selected,disabled}} disabled={disabled} onPress={onPress} style={[s.chip,selected&&s.selected]}><Text style={[s.chipText,selected&&{color:c.primary}]}>{label}</Text></Pressable>;}
 export function Avatar({name}:{name:string}) {return <View style={s.avatar}><Text style={s.avatarText}>{name.split(' ').slice(0,2).map(n=>n[0]).join('').toUpperCase()}</Text></View>;}
-export function Status({status}:{status:string}) {return <Text style={[s.badge,status==='void'?s.voidBadge:status==='posted'?s.postedBadge:null]}>{status}</Text>;}
+export function Status({status}:{status:string}) {return <Text style={[s.badge,status.toLowerCase()==='void'?s.voidBadge:status.toLowerCase()==='posted'?s.postedBadge:null]}>{status}</Text>;}
 export function Row({label,value}:{label:string;value:string}) {return <View style={s.row}><Text style={s.small}>{label}</Text><Text style={[s.bold,{flexShrink:1,textAlign:'right'}]}>{value}</Text></View>;}
 export const s=StyleSheet.create({
  canvas:{flex:1,backgroundColor:c.canvas},safe:{flex:1,width:'100%',maxWidth:430,alignSelf:'center',backgroundColor:'#f4f6f8'},content:{padding:20,paddingBottom:32,gap:14},header:{backgroundColor:c.white,minHeight:69,paddingHorizontal:20,paddingVertical:13,flexDirection:'row',alignItems:'center',gap:12,borderBottomWidth:1,borderColor:c.line},handle:{width:38,height:4,borderRadius:4,backgroundColor:'#ccd2d7',alignSelf:'center',marginVertical:9},

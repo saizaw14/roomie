@@ -107,3 +107,13 @@ Replaced the old household detail page with the existing Figma-style bottom-shee
 Reference: Figma Make source ZIP supplied by the user, members/settings branches and corresponding CSS. The Figma connector returns source links but does not support Make screenshots. Browser visual checks were attempted; Computer Use permissions are not granted. Live invitation creation/sharing/revocation was not performed during this UI task.
 
 Validation: Expo lint and TypeScript passed, all 58 tests passed. React review checked unconditional hooks, role/query scoping, error/retry states, form labels, and disabling sheet dismissal and section switching while mutations are pending.
+
+## Expense dashboard design (2026-10-18)
+
+Updated the expense dashboard using the supplied Figma Make Expenses source: shared household header, period spending summary, horizontal category chips, date-grouped expense cards with colored category icons, payer/participant and personal-share labels, posted/revised/void states, floating Add expense action, and four-item navigation. Reused existing local icons, Inter fonts, query hooks, currency formatting, expense routes, and household sheet. Period/status filters now use a draft bottom sheet with Apply/cancel behavior, validated custom dates, and a three-calendar-month option. Voids remain excluded from spending totals. No sample expenses, database changes, or dependencies added. Bills and notifications show availability messages.
+
+Validation: lint, typecheck, and all 58 tests passed. Device/browser visual acceptance and live financial writes remain unverified; previous Computer Use attempts were blocked by missing permissions. Existing create/edit/detail designs are outside this dashboard change.
+
+## Calendar date ranges (2026-10-18)
+
+Replaced typed custom filter dates with From/To date buttons and a shared inline calendar for web, iOS, and Android. Month navigation, selected endpoints and range highlighting use the existing design tokens. Choosing From advances to To; earlier To days are disabled, and moving From beyond the existing end clears that end. Apply still requires a complete valid range; cancelling the filter sheet discards its draft. Dates remain local calendar strings with the existing 2000–2100 bounds. No native dependency or migration added. Device visual checks remain pending.
