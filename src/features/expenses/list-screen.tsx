@@ -8,6 +8,8 @@ import { useRoomieFonts } from '@/hooks/use-roomie-fonts';
 import { HouseholdSheet } from '@/features/households/household-sheet';
 import { DashboardIcon,styles as d } from '@/features/dashboard/components';
 import { ExpenseFilterSheet,ExpenseNavigation,x } from './dashboard-ui';
+import { HouseholdEmptyState } from '@/features/households/household-empty-state';
+import { householdError } from '@/features/households/validation';
 import { useHouseholds } from '@/features/households/use-households';
 import { useAuth } from '@/lib/auth-context';
 import { categories,money as formatMoney,localToday,validDate } from './domain';
@@ -33,16 +35,16 @@ export function ExpenseListScreen() {
  const groups=Array.from(grouped,([date,expenses])=>({date,expenses}));
  if(!loaded&&!fontError)return <LoadingScreen/>;
  return <View style={d.canvas}><SafeAreaView style={d.safe}>
-  <View style={d.header}><Link href="/households" asChild><Pressable accessibilityRole="button" accessibilityLabel="Switch household" style={d.houseSwitch}><View style={d.houseIcon}><DashboardIcon name="building"/></View><View style={{flex:1}}><Text style={d.small}>Household</Text><Text numberOfLines={1} style={d.bold}>{house.current?.name??'Your shared home'}</Text></View><DashboardIcon name="chevron"/></Pressable></Link><Pressable accessibilityRole="button" accessibilityLabel="Notifications" style={d.iconButton} onPress={()=>setNotice('notifications')}><DashboardIcon name="bell" color="#647084"/></Pressable></View>
+  <View style={d.header}><Link href="/households" asChild><Pressable accessibilityRole="button" accessibilityLabel="Switch household" style={d.houseSwitch}><View style={d.houseIcon}><DashboardIcon name="building"/></View><View style={{flex:1}}><Text style={d.small}>Household</Text><Text numberOfLines={1} style={d.bold}>{house.current?.name??(house.isPending?'Loading household…':'No household yet')}</Text></View><DashboardIcon name="chevron"/></Pressable></Link><Pressable accessibilityRole="button" accessibilityLabel="Notifications" style={d.iconButton} onPress={()=>setNotice('notifications')}><DashboardIcon name="bell" color="#647084"/></Pressable></View>
   <ScrollView contentContainerStyle={x.content}>
-  {house.isPending?<Text style={s.small}>Loading households…</Text>:house.isError?<Text accessibilityRole="alert" style={s.error}>{expenseError(house.error)}</Text>:!house.current?<><Text style={s.body}>Create or join a household to track shared expenses.</Text><Link href="/households/create" asChild><Button label="Create household" appearance="auth"/></Link></>:null}
+  {house.isPending?<ExpenseCard><Text style={s.body}>Loading your household…</Text></ExpenseCard>:house.isError?<ExpenseCard><Text accessibilityRole="alert" style={s.error}>{householdError(house.error)}</Text><Button appearance="auth" label="Retry households" loading={house.isFetching} onPress={()=>void house.refetch()}/></ExpenseCard>:house.isSuccess&&!house.current?<HouseholdEmptyState expenses/>:null}
   {house.current?<>
    {members.isError?<Text accessibilityRole="alert" style={s.error}>Member names and personal shares could not be loaded.</Text>:null}
    {members.isError?<Button appearance="auth" label="Retry members" variant="secondary" onPress={()=>void members.refetch()}/>:null}
    {query.isPending?<Text style={s.small}>Loading expenses…</Text>:query.isError?<><Text accessibilityRole="alert" style={s.error}>{expenseError(query.error)}</Text><Button label="Retry" onPress={()=>void query.refetch()}/></>:<>
     <View style={x.summary}><View style={{flexShrink:1}}><Text style={s.small}>{period==='This month'?new Date(`${month}-01T12:00:00`).toLocaleDateString(undefined,{month:'long'}):spendingPeriod} spending</Text><Text style={x.amount}>{Number.isSafeInteger(total)?money(total):'Total unavailable'}</Text></View><Pressable accessibilityRole="button" accessibilityLabel="Filter expenses" style={x.filter} onPress={()=>setFilters(true)}><Text style={x.filterText}>{period}{status!=='All'?` · ${status}`:''}</Text><View style={{transform:[{rotate:'90deg'}]}}><Icon name="chevron"/></View></Pressable></View>
     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{marginHorizontal:-20}} contentContainerStyle={x.chips}>{['All',...categories].map(c=><Choice key={c} label={c} selected={category===c} onPress={()=>setCategory(c)}/>)}</ScrollView>
-    {rows.length===0?<ExpenseCard><Text style={s.body}>No expenses in this selection.</Text><Text style={s.small}>Add an expense from Home or change your filters.</Text></ExpenseCard>:null}
+    {rows.length===0?<ExpenseCard><View style={{gap:10,alignItems:'center',paddingVertical:14}}><DashboardIcon name="receipt"/><Text style={s.bold}>{query.data?.expenses.length?'No expenses in this selection':'No shared expenses yet'}</Text><Text style={[s.small,{textAlign:'center'}]}>{query.data?.expenses.length?'Try another category or date range.':'Your household is ready. Add your first expense from Home and it will appear here.'}</Text>{!query.data?.expenses.length?<Link href="/home" asChild><Button appearance="auth" variant="secondary" label="Go to Home"/></Link>:null}</View></ExpenseCard>:null}
     {groups.map(group=><View key={group.date} style={{gap:12}}><Text accessibilityRole="header" style={x.date}>{new Date(`${group.date}T12:00:00`).toLocaleDateString(undefined,{day:'numeric',month:'long',...(group.date.slice(0,4)!==today.slice(0,4)?{year:'numeric'}:{})})}</Text><View style={x.group}>{group.expenses.map((e,index)=>{
      const splits=query.data?.splits.filter(p=>p.expense_id===e.id)??[];
      const payerNames=members.isSuccess?(query.data?.payers.filter(p=>p.expense_id===e.id).map(p=>name(p.member_id))??[]).join(', '):'Loading…';

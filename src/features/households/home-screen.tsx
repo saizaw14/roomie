@@ -14,6 +14,7 @@ import { expenseSummary } from '@/features/dashboard/summary';
 import { useActivity } from '@/features/dashboard/use-activity';
 import { DashboardCard,DashboardIcon,styles as s } from '@/features/dashboard/components';
 import { useHouseholds } from './use-households';
+import { HouseholdEmptyState } from './household-empty-state';
 import { householdError } from './validation';
 import { useInviteIntent } from './invite-intent';
 import type { ActivityEvent } from '@/types/database';
@@ -34,7 +35,7 @@ export function HomeScreen() {
  return <View style={s.canvas}><SafeAreaView style={s.safe}>
   <View style={s.header}>
    <Link href="/households" asChild><Pressable accessibilityRole="button" accessibilityLabel={`Switch household, ${house?.name??'no household selected'}`} style={s.houseSwitch}>
-    <View style={s.houseIcon}><DashboardIcon name="building"/></View><View style={{flex:1}}><Text style={s.small}>Household</Text><Text numberOfLines={1} style={s.bold}>{house?.name??'Your shared home'}</Text></View><DashboardIcon name="chevron"/>
+    <View style={s.houseIcon}><DashboardIcon name="building"/></View><View style={{flex:1}}><Text style={s.small}>Household</Text><Text numberOfLines={1} style={s.bold}>{house?.name??(houses.isPending?'Loading household…':'No household yet')}</Text></View><DashboardIcon name="chevron"/>
    </Pressable></Link>
    <Pressable accessibilityRole="button" accessibilityLabel="Notifications, coming soon" onPress={()=>notice==='notifications'?setNotice(null):openNotice('notifications')} style={s.iconButton}><DashboardIcon name="bell" color="#647084"/></Pressable>
   </View>
@@ -44,13 +45,7 @@ export function HomeScreen() {
    {intent.code?<Link href={{pathname:'/join',params:{code:intent.code}}} asChild><Button appearance="auth" label="Continue household invitation"/></Link>:null}
    {houses.isPending?<DashboardCard><Text style={s.body}>Loading your household…</Text></DashboardCard>:null}
    {houses.isError?<DashboardCard><Text accessibilityRole="alert" style={s.error}>{householdError(houses.error)}</Text><Button appearance="auth" label="Retry households" loading={houses.isFetching} onPress={()=>void houses.refetch()}/></DashboardCard>:null}
-   {houses.isSuccess&&!house?<>
-    <View style={s.balance}><Image source={require('../../../assets/images/dashboard/balance-background.svg')} style={StyleSheet.absoluteFill} contentFit="fill"/>
-     <Text style={s.balanceLabel}>Make room for your household.</Text><Text style={[s.amount,{fontSize:28,lineHeight:34}]}>Shared living.{'\n'}Simpler money.</Text><Text style={s.balanceHint}>Create a household or join your roommates to get started.</Text>
-     <View style={s.balanceActions}><Link href="/households/create" asChild><Button appearance="auth" label="Create household" style={s.primaryAction} labelStyle={s.primaryLabel}/></Link><Link href="/join" asChild><Button appearance="auth" label="Join household" variant="secondary" style={s.secondaryAction} labelStyle={s.secondaryLabel}/></Link></View>
-    </View>
-    <DashboardCard><Text style={s.heading}>Your home, in one place</Text><Text style={s.body}>Track shared expenses, choose how to split them, and keep a clear history with your roommates.</Text></DashboardCard>
-   </>:null}
+   {houses.isSuccess&&!house?<HouseholdEmptyState/>:null}
    {house?<>
     <View style={s.balance}>
      <Image source={require('../../../assets/images/dashboard/balance-background.svg')} style={StyleSheet.absoluteFill} contentFit="fill"/>

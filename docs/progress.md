@@ -117,3 +117,7 @@ Validation: lint, typecheck, and all 58 tests passed. Device/browser visual acce
 ## Calendar date ranges (2026-10-18)
 
 Replaced typed custom filter dates with From/To date buttons and a shared inline calendar for web, iOS, and Android. Month navigation, selected endpoints and range highlighting use the existing design tokens. Choosing From advances to To; earlier To days are disabled, and moving From beyond the existing end clears that end. Apply still requires a complete valid range; cancelling the filter sheet discards its draft. Dates remain local calendar strings with the existing 2000–2100 bounds. No native dependency or migration added. Device visual checks remain pending.
+
+## New-account dashboard states (2026-10-19)
+
+Added a shared first-use view for Home and Expenses when the signed-in account has no household: welcome message, Create/Join actions, and setup steps. Headers explicitly show no household yet. Expenses now has household loading/error/retry cards, and distinguishes a household with no expenses from filters with no matching results. The first-expense state routes to Home; Add expense remains exclusive to Home. No sample balances or migration changes. Lint and typecheck passed; live new-account/device reproduction remains pending.
