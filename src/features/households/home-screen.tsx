@@ -10,6 +10,8 @@ import { useProfile } from '@/features/profile/use-profile';
 import { useExpenses,useExpenseMembers } from '@/features/expenses/hooks';
 import { expenseError } from '@/features/expenses/validation';
 import { money as formatMoney,safeMinor } from '@/features/expenses/domain';
+import { useSettlements } from '@/features/settlements/hooks';
+import { settlementError } from '@/features/settlements/api';
 import { expenseSummary } from '@/features/dashboard/summary';
 import { useActivity } from '@/features/dashboard/use-activity';
 import { DashboardCard,DashboardIcon,styles as s } from '@/features/dashboard/components';
@@ -22,13 +24,16 @@ import type { ActivityEvent } from '@/types/database';
 export function HomeScreen() {
  const [loaded,fontError]=useRoomieFonts();
  const profile=useProfile();const houses=useHouseholds();const intent=useInviteIntent();
- const house=houses.current;const expenses=useExpenses(house?.id??'');const members=useExpenseMembers(house?.id??'');
+ const house=houses.current;const expenses=useExpenses(house?.id??'');const members=useExpenseMembers(house?.id??'');const settlements=useSettlements(house?.id??'');
  const [expanded,setExpanded]=useState(false);const activity=useActivity(house?.id??'',expanded);
  const scroll=useRef<ScrollView>(null);
- const [notice,setNotice]=useState<'bills'|'notifications'|'settle'|null>(null);
- function openNotice(value:'bills'|'notifications'|'settle'){setNotice(value);scroll.current?.scrollTo({y:0,animated:true});}
+ const [notice,setNotice]=useState<'bills'|'notifications'|null>(null);
+ function openNotice(value:'bills'|'notifications'){setNotice(value);scroll.current?.scrollTo({y:0,animated:true});}
  let summary:ReturnType<typeof expenseSummary>|null=null;let balanceError:string|null=null;
  if(expenses.isSuccess&&houses.membership)try{summary=expenseSummary(expenses.data,houses.membership.id);}catch(failure){balanceError=expenseError(failure);}
+ if(summary&&settlements.isSuccess){const mine=settlements.data.balances.find(b=>b.member_id===houses.membership?.id);if(mine)summary={...summary,net:mine.net};else balanceError='Your membership balance is unavailable.';}
+ if(settlements.isError)balanceError=settlementError(settlements.error);
+ const pending=settlements.data?.settlements.filter(r=>r.status==='pending'&&r.recipient_id===houses.membership?.id)??[];
  const money=(value:number)=>formatMoney(value,house?.currency??'MYR');
  const memberName=(id:string)=>members.data?.find(m=>m.user_id===id)?.display_name??'Household member';
  if(!loaded&&!fontError)return <LoadingScreen/>;
@@ -41,7 +46,7 @@ export function HomeScreen() {
   </View>
   <ScrollView ref={scroll} contentContainerStyle={s.content}>
    {profile.data?.display_name?<Text style={s.small}>Welcome home, {profile.data.display_name}.</Text>:null}
-   {notice?<DashboardCard><Text style={s.heading}>{notice==='bills'?'Bills coming soon':notice==='settle'?'Repayments coming soon':'Notifications coming soon'}</Text><Text style={s.body}>{notice==='bills'?'Recurring bills and due-date reminders will appear here once they are available.':notice==='settle'?'Repayment recording and confirmation will be available soon. Your expense balance currently includes posted expenses only.':'Bill reminders and repayment notifications will appear here once they are available.'}</Text><Button appearance="auth" label="Got it" variant="secondary" onPress={()=>setNotice(null)}/></DashboardCard>:null}
+   {notice?<DashboardCard><Text style={s.heading}>{notice==='bills'?'Bills coming soon':'Notifications coming soon'}</Text><Text style={s.body}>{notice==='bills'?'Recurring bills and due-date reminders will appear here once they are available.':'Bill notifications will appear here when available. Review incoming repayments in Settle up.'}</Text><Button appearance="auth" label="Got it" variant="secondary" onPress={()=>setNotice(null)}/></DashboardCard>:null}
    {intent.code?<Link href={{pathname:'/join',params:{code:intent.code}}} asChild><Button appearance="auth" label="Continue household invitation"/></Link>:null}
    {houses.isPending?<DashboardCard><Text style={s.body}>Loading your household…</Text></DashboardCard>:null}
    {houses.isError?<DashboardCard><Text accessibilityRole="alert" style={s.error}>{householdError(houses.error)}</Text><Button appearance="auth" label="Retry households" loading={houses.isFetching} onPress={()=>void houses.refetch()}/></DashboardCard>:null}
@@ -49,11 +54,12 @@ export function HomeScreen() {
    {house?<>
     <View style={s.balance}>
      <Image source={require('../../../assets/images/dashboard/balance-background.svg')} style={StyleSheet.absoluteFill} contentFit="fill"/>
-     <View style={s.balanceTop}><View style={s.balanceIcon}><DashboardIcon name={summary&&summary.net<0?'arrowDown':'arrowUp'} color="white"/></View><Text style={s.balanceLabel}>{summary?summary.net>0?'You are owed':summary.net<0?'You owe':'Expense balance':'Expense balance'}</Text><Text style={s.badge}>{house.currency}</Text></View>
-     {expenses.isPending?<><Text style={[s.amount,{fontSize:25}]}>Loading…</Text><Text style={s.balanceHint}>Fetching your posted expenses</Text></>:expenses.isError||balanceError?<><Text style={[s.amount,{fontSize:25}]}>Unavailable</Text><Text accessibilityRole="alert" style={s.balanceHint}>{balanceError??expenseError(expenses.error)}</Text></>:summary?<><Text style={s.amount}>{money(Math.abs(summary.net))}</Text><Text style={s.balanceHint}>{summary.count===0?'No posted expenses yet':`From ${summary.count} posted expense${summary.count===1?'':'s'}`}</Text></>:<Text style={s.balanceHint}>Your membership is unavailable. Reopen this household to try again.</Text>}
-     <View style={s.balanceActions}><Link href={{pathname:'/expenses/create',params:{household:house.id}}} asChild><Button appearance="auth" label="Add expense" leadingIcon={<DashboardIcon name="plus" color="#0b5f59"/>} style={s.primaryAction} labelStyle={s.primaryLabel}/></Link><Button appearance="auth" label="Settle up" leadingIcon={<DashboardIcon name="wallet" color="white"/>} variant="secondary" style={s.secondaryAction} labelStyle={s.secondaryLabel} onPress={()=>openNotice('settle')}/></View>
+     <View style={s.balanceTop}><View style={s.balanceIcon}><DashboardIcon name={summary&&summary.net<0?'arrowDown':'arrowUp'} color="white"/></View><Text style={s.balanceLabel}>{summary?summary.net>0?'You are owed':summary.net<0?'You owe':'All settled up':'Balance'}</Text><Text style={s.badge}>{house.currency}</Text></View>
+     {expenses.isPending||settlements.isPending?<><Text style={[s.amount,{fontSize:25}]}>Loading…</Text><Text style={s.balanceHint}>Fetching your posted expenses</Text></>:expenses.isError||balanceError?<><Text style={[s.amount,{fontSize:25}]}>Unavailable</Text><Text accessibilityRole="alert" style={s.balanceHint}>{balanceError??expenseError(expenses.error)}</Text></>:summary?<><Text style={s.amount}>{money(Math.abs(summary.net))}</Text><Text style={s.balanceHint}>{summary.count===0?'No posted expenses yet':'Posted expenses and confirmed repayments'}</Text></>:<Text style={s.balanceHint}>Your membership is unavailable. Reopen this household to try again.</Text>}
+     <View style={s.balanceActions}><Link href={{pathname:'/expenses/create',params:{household:house.id}}} asChild><Button appearance="auth" label="Add expense" leadingIcon={<DashboardIcon name="plus" color="#0b5f59"/>} style={s.primaryAction} labelStyle={s.primaryLabel}/></Link><Link href={{pathname:'/settlements',params:{household:house.id}}} asChild><Button appearance="auth" label="Settle up" leadingIcon={<DashboardIcon name="wallet" color="white"/>} variant="secondary" style={s.secondaryAction} labelStyle={s.secondaryLabel}/></Link></View>
     </View>
-    <View style={s.note}><DashboardIcon name="shield" color="#647084"/><Text style={[s.small,{flex:1}]}>This balance includes posted expenses. Repayments will be included when available.</Text></View>
+    <View style={s.note}><DashboardIcon name="shield" color="#647084"/><Text style={[s.small,{flex:1}]}>Balances include posted expenses and confirmed repayments. Pending payments have no effect.</Text></View>
+    {pending.length?<DashboardCard><Text style={s.heading}>{pending.length} payment{pending.length===1?'':'s'} need your review</Text><Text style={s.small}>Confirm only money you have received outside Roomie.</Text><Link href={{pathname:'/settlements',params:{household:house.id}}} asChild><Button appearance="auth" label="Review repayments"/></Link></DashboardCard>:null}
     <View style={s.section}><Text accessibilityRole="header" style={s.heading}>Coming up</Text><Pressable accessibilityRole="button" accessibilityLabel="About upcoming bills" onPress={()=>openNotice('bills')}><Text style={s.link}>About bills</Text></Pressable></View>
     <DashboardCard><View style={{flexDirection:'row',gap:12,alignItems:'center'}}><View style={s.emptyIcon}><DashboardIcon name="calendar"/></View><View style={{flex:1}}><Text style={s.bold}>Bill reminders coming soon</Text><Text style={s.small}>Keep track of recurring household costs when this feature is available.</Text></View></View></DashboardCard>
     <View style={s.section}><Text accessibilityRole="header" style={s.heading}>Recent activity</Text><Pressable accessibilityRole="button" accessibilityState={{expanded}} onPress={()=>setExpanded(v=>!v)}><Text style={s.link}>{expanded?'Show less':'View more'}</Text></Pressable></View>

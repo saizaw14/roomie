@@ -41,3 +41,5 @@ Public configuration now points to the user’s Supabase project, and the profil
 The welcome illustration uses clearly labeled fictional figures. No illustration values are account balances; household creation/joining/invites/member views are implemented; expense creation, equal/exact/percentage splits, editing, voiding, and revision history are implemented. Balances and repayments remain later milestones. Apply the household and expense migrations before using those flows (see [expense setup](docs/expenses-setup.md)); the signed-in Home shows your selected household or an empty household state. Node 22.18+ is required for the dependency-free test runner (Node 24 is used here).
 
 Do not use the original starter reset script: it can replace the Roomie source. Some inactive starter helper components/assets are retained to preserve the original setup; the layout no longer mounts their tabs or animated overlay. `/explore` redirects to `/` for old links.
+
+Settle Up (balances, repayment recording, and recipient confirmation) setup: [docs/settlements-setup.md](docs/settlements-setup.md). Apply its new migration after household currencies before testing the feature.
