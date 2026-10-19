@@ -121,3 +121,7 @@ Replaced typed custom filter dates with From/To date buttons and a shared inline
 ## New-account dashboard states (2026-10-19)
 
 Added a shared first-use view for Home and Expenses when the signed-in account has no household: welcome message, Create/Join actions, and setup steps. Headers explicitly show no household yet. Expenses now has household loading/error/retry cards, and distinguishes a household with no expenses from filters with no matching results. The first-expense state routes to Home; Add expense remains exclusive to Home. No sample balances or migration changes. Lint and typecheck passed; live new-account/device reproduction remains pending.
+
+## Shared expense refresh (2026-10-19)
+
+Found a cross-client refresh gap: expense mutations invalidated only the creator's query cache, leaving another member's already-open dashboard unchanged. Expense collections and activity now refresh on route focus, on app/browser foreground, and every 10 seconds while their route is focused and the app is active. Requests join existing in-flight reads rather than cancelling them; timers and focus subscriptions are removed on blur/unmount. Account/household query keys, RLS, consistent expense reads, and balance arithmetic remain intact. No migration or realtime publication setup required. Existing balance tests include the payer's credit, another member's debt, edits, and zero-sum totals. Live two-account verification is still pending.
