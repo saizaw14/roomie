@@ -125,3 +125,13 @@ Added a shared first-use view for Home and Expenses when the signed-in account h
 ## Shared expense refresh (2026-10-19)
 
 Found a cross-client refresh gap: expense mutations invalidated only the creator's query cache, leaving another member's already-open dashboard unchanged. Expense collections and activity now refresh on route focus, on app/browser foreground, and every 10 seconds while their route is focused and the app is active. Requests join existing in-flight reads rather than cancelling them; timers and focus subscriptions are removed on blur/unmount. Account/household query keys, RLS, consistent expense reads, and balance arithmetic remain intact. No migration or realtime publication setup required. Existing balance tests include the payer's credit, another member's debt, edits, and zero-sum totals. Live two-account verification is still pending.
+
+## Personal payment QR upload (2026-10-20)
+
+Added Me → My payment QR, using the existing Figma profile menu and bottom-sheet language. The supplied source has no QR-specific frame, so this extends its components: image selection, uncropped preview, explicit save, replacement/discard, and confirmed removal. Files persist in a private account-owned Supabase Storage bucket with short-lived preview URLs. PNG/JPEG up to 5 MB only; no QR decoding, household sharing or money movement. Installed SDK-compatible Expo ImagePicker and base64-js; disabled camera/microphone permissions in its config plugin.
+
+Migration: `20261020000100_payment_qr.sql`; SQL Editor fallback: `docs/supabase-dashboard-payment-qr.sql`; setup/acceptance: `docs/payment-qr-setup.md`. The hosted migration and live uploads remain pending. Lint and TypeScript passed; all 68 tests passed, including byte-format/size validation and storage ownership/path policy tests against a PostgreSQL Storage fixture. Browser/device visual and native picker verification remain pending.
+
+## Published QR design update (2026-10-20)
+
+The user re-shared the published Figma site, which now includes a QR-specific screen absent from the earlier ZIP. Inspected its latest published JS/CSS and updated the profile QR menu/icon, sheet subtitle, compact avatar/name/provider/status row, centered 240px maximum preview and placeholder, outlined upload control, blue information banner, and Remove/Save action proportions. Reused the published source's QR/upload icon geometry. Kept real persistence, validation, cancellation and confirmed deletion. The banner accurately describes existing account-private access; prototype household sharing is not implemented by this visual change. No SQL changes. Lint/typecheck and both QR policy/validation tests passed; platform export verified. Device visual comparison remains pending.
