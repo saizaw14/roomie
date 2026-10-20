@@ -12,10 +12,11 @@ import { useActivity } from '@/features/dashboard/use-activity';
 import { DashboardIcon, styles as nav } from '@/features/dashboard/components';
 import { ProfileEditor, ProfilePasswordForm } from './profile-forms';
 import { MenuCard, MenuRow, ProfileAvatar, ProfileIcon, s } from './profile-ui';
+import { PaymentQr } from './payment-qr';
 import { useProfile } from './use-profile';
 
-type Panel = 'profile' | 'security' | 'password' | 'activity' | 'notifications' | 'bills' | 'logout';
-const titles: Record<Panel,string> = {profile:'Profile details',security:'Security',password:'Change password',activity:'Activity & revisions',notifications:'Notifications',bills:'Bills',logout:'Log out'};
+type Panel = 'qr' | 'profile' | 'security' | 'password' | 'activity' | 'notifications' | 'bills' | 'logout';
+const titles: Record<Panel,string> = {qr:'My payment QR',profile:'Profile details',security:'Security',password:'Change password',activity:'Activity & revisions',notifications:'Notifications',bills:'Bills',logout:'Log out'};
 export function ProfileScreen() {
  const [loaded,fontError]=useRoomieFonts();
  const {session,signOut}=useAuth();const profile=useProfile();const houses=useHouseholds();const house=houses.current;
@@ -36,7 +37,7 @@ export function ProfileScreen() {
    <MenuCard><MenuRow icon="users" title="Members" detail={house?`${houses.data?.memberships.filter(m=>m.household_id===house.id&&m.status==='active').length??0} active members`:'Create or join a household'} onPress={()=>house?router.push({pathname:'/households/[id]',params:{id:house.id}}):router.push('/households')}/><MenuRow icon="settings" title="Household settings" detail={house?.name??'Choose your shared home'} onPress={()=>house?router.push({pathname:'/households/[id]',params:{id:house.id,view:'settings'}}):router.push('/households')}/><MenuRow icon="history" title="Activity & revisions" detail="Financial change history" onPress={()=>open('activity')}/></MenuCard>
    {houses.isError?<><Text style={s.error}>Your household could not be loaded.</Text><Button appearance="auth" variant="secondary" label="Retry household" onPress={()=>void houses.refetch()}/></>:null}
    <Text accessibilityRole="header" style={s.heading}>Account</Text>
-   <MenuCard><MenuRow icon="user" title="Profile details" disabled={!profile.isSuccess} onPress={()=>open('profile')}/><MenuRow icon="shield" title="Security" detail="Password and sessions" onPress={()=>open('security')}/><MenuRow icon="bell" title="Notifications" detail="Bills and payment requests" onPress={()=>open('notifications')}/></MenuCard>
+   <MenuCard><MenuRow icon="user" title="Profile details" disabled={!profile.isSuccess} onPress={()=>open('profile')}/><MenuRow icon="qr" title="Payment QR" detail="DuitNow, bank or e-wallet" onPress={()=>open('qr')}/><MenuRow icon="shield" title="Security" detail="Password and sessions" onPress={()=>open('security')}/><MenuRow icon="bell" title="Notifications" detail="Bills and payment requests" onPress={()=>open('notifications')}/></MenuCard>
    {house?<View style={s.policy}><ProfileIcon name="shield"/><View style={{flex:1,gap:5}}><Text style={s.bold}>{owner?'Owner permissions':'Household membership'}</Text><Text style={s.body}>{owner?'You can manage invitations and household settings, and edit or void household expenses.':'You can view shared expenses and manage the expenses you created.'}</Text></View></View>:null}
    <Button appearance="auth" label="Log out" variant="secondary" style={s.logout} labelStyle={s.logoutLabel} leadingIcon={<ProfileIcon name="logout" color="#b4232d"/>} onPress={()=>open('logout')}/>
    <Text style={s.version}>Roomie v1.0 · Shared living. Simpler money.</Text>
@@ -45,8 +46,9 @@ export function ProfileScreen() {
  </SafeAreaView>
  <Modal visible={panel!==null} transparent animationType="fade" onRequestClose={close}>
   <View style={sheet.overlay}><Pressable style={StyleSheet.absoluteFill} accessibilityRole="button" accessibilityLabel="Close panel" disabled={busy} onPress={close}/><KeyboardAvoidingView pointerEvents="box-none" behavior={Platform.OS==='ios'?'padding':'height'} style={sheet.keyboard}>
-   <View accessibilityViewIsModal style={[sheet.body,{paddingBottom:Math.max(insets.bottom,20),maxHeight:'90%'}]}><View style={sheet.handle}/><View style={sheet.header}><Text accessibilityRole="header" style={s.heading}>{panel?titles[panel]:''}</Text><Pressable accessibilityRole="button" accessibilityLabel="Close panel" disabled={busy} onPress={close} style={s.iconButton}><Text style={s.heading}>×</Text></Pressable></View>
+   <View accessibilityViewIsModal style={[sheet.body,{paddingBottom:Math.max(insets.bottom,20),maxHeight:'90%',backgroundColor:panel==='qr'?'#f4f6f8':'white'}]}><View style={sheet.handle}/><View style={sheet.header}><View style={{flex:1}}><Text accessibilityRole="header" style={s.heading}>{panel?titles[panel]:''}</Text>{panel==='qr'?<Text style={[s.body,{fontSize:10,marginTop:4}]}>Used when housemates repay you</Text>:null}</View><Pressable accessibilityRole="button" accessibilityLabel="Close panel" disabled={busy} onPress={close} style={s.iconButton}><Text style={s.heading}>×</Text></Pressable></View>
    <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={sheet.content}>
+    {panel==='qr'?<PaymentQr onBusy={setBusy}/>:null}
     {panel==='profile'?<ProfileEditor initialName={profile.data?.display_name??''} uri={profile.data?.avatar_url} email={session?.user.email??''} exists={!!profile.data} onBusy={setBusy} onDone={()=>saved('Profile saved.')}/>:null}
     {panel==='password'?<ProfilePasswordForm onBusy={setBusy} onDone={()=>saved('Password updated.')}/>:null}
     {panel==='security'?<><MenuCard><MenuRow icon="shield" title="Password" detail="Choose a new password" onPress={()=>open('password')}/></MenuCard><Text style={s.heading}>Current session</Text><Text style={s.bold}>{session?.user.email}</Text><Text style={s.body}>Signed in on {Platform.OS==='web'?'this browser':'this device'}. Log out to end this session.</Text><Button appearance="auth" label="Log out" variant="secondary" onPress={()=>open('logout')}/></>:null}
@@ -57,4 +59,4 @@ export function ProfileScreen() {
   </KeyboardAvoidingView></View>
  </Modal></View>;
 }
-const sheet=StyleSheet.create({overlay:{flex:1,backgroundColor:'rgba(10,22,30,0.46)'},keyboard:{flex:1,justifyContent:'flex-end'},body:{width:'100%',maxWidth:430,alignSelf:'center',backgroundColor:'white',borderTopLeftRadius:24,borderTopRightRadius:24},handle:{width:38,height:4,borderRadius:2,backgroundColor:'#d9dfe4',alignSelf:'center',marginTop:10},header:{paddingHorizontal:20,paddingVertical:12,flexDirection:'row',justifyContent:'space-between',alignItems:'center',borderBottomWidth:1,borderColor:'#e5e9ee'},content:{padding:20,gap:16}});
+const sheet=StyleSheet.create({overlay:{flex:1,backgroundColor:'rgba(10,22,30,0.46)'},keyboard:{flex:1,justifyContent:'flex-end'},body:{width:'100%',maxWidth:430,alignSelf:'center',backgroundColor:'white',borderTopLeftRadius:24,borderTopRightRadius:24},handle:{width:38,height:4,borderRadius:2,backgroundColor:'#d9dfe4',alignSelf:'center',marginTop:10},header:{backgroundColor:'white',paddingHorizontal:20,paddingVertical:12,flexDirection:'row',justifyContent:'space-between',alignItems:'center',borderBottomWidth:1,borderColor:'#e5e9ee'},content:{padding:20,gap:16}});
