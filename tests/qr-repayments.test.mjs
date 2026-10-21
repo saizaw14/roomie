@@ -1,0 +1,45 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { PGlite } from '@electric-sql/pglite';
+test('QR sharing and receipts enforce eligibility, ownership, immutable evidence and confirmation',async()=>{
+ const db=new PGlite();try{
+ await db.exec(`create role anon nologin;create role authenticated nologin;create schema auth;create table auth.users(id uuid primary key,raw_user_meta_data jsonb);
+ create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid;$$;
+ grant usage on schema public,auth to anon,authenticated;grant execute on function auth.uid() to anon,authenticated;
+ create schema storage;create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
+ create table storage.objects(id uuid primary key default gen_random_uuid(),bucket_id text,name text,unique(bucket_id,name));
+ alter table storage.objects enable row level security;grant usage on schema storage to authenticated,anon;grant select,insert,update,delete on storage.objects to authenticated;grant select on storage.objects to anon;
+ create schema supabase_migrations;create table supabase_migrations.schema_migrations(version text primary key,name text,statements text[]);`);
+ for(const file of ['20261008000100_profiles','20261009000100_households','20261012000100_expenses','20261015000100_household_currencies','20261019000100_settlements','20261020000100_payment_qr'])await db.exec(await readFile(new URL('../supabase/migrations/'+file+'.sql',import.meta.url),'utf8'));
+ const fallback=await readFile(new URL('../docs/supabase-dashboard-qr-repayments.sql',import.meta.url),'utf8');await db.exec(fallback);
+ const users=Array.from({length:4},(_,i)=>`00000000-0000-4000-8000-00000000000${i+1}`);
+ for(const id of users)await db.query('insert into auth.users values($1,$2)',[id,{display_name:id.slice(-1)}]);
+ const as=(user,sql,args=[],role='authenticated')=>db.transaction(async tx=>{await tx.exec(`set local role ${role}`);await tx.query("select set_config('request.jwt.claim.sub',$1,true)",[user]);return tx.query(sql,args);});
+ const house=(await as(users[0],"select public.roomie_create_household('Home','MYR') id")).rows[0].id;const code=(await as(users[0],'select * from public.roomie_create_invite($1)',[house])).rows[0].code;
+ for(const user of users.slice(1,3))await as(user,'select public.roomie_join_household($1)',[code]);
+ const members=(await db.query('select * from public.household_members where household_id=$1',[house])).rows;const member=user=>members.find(m=>m.user_id===user).id;
+ await as(users[0],'select public.roomie_create_expense($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)',[house,'Dinner','Other',10000,'2000-01-01','','equal',[{member_id:member(users[0]),value:10000}],[{member_id:member(users[0])},{member_id:member(users[1])}],'expense']);
+ await as(users[0],"insert into storage.objects(bucket_id,name) values('payment-qr',$1)",[users[0]+'/payment-qr']);
+ assert.equal((await as(users[1],"select * from storage.objects where bucket_id='payment-qr'")).rows.length,1);
+ for(const user of [users[2],users[3]])assert.equal((await as(user,"select * from storage.objects where bucket_id='payment-qr'")).rows.length,0);
+ assert.equal((await as(users[1],"update storage.objects set name=$1 where bucket_id='payment-qr' returning id",[users[1]+'/payment-qr'])).rows.length,0);
+ const path=users[1]+'/11111111-1111-4111-8111-111111111111';const orphan=users[1]+'/22222222-2222-4222-8222-222222222222';
+ for(const value of [path,orphan])await as(users[1],"insert into storage.objects(bucket_id,name) values('payment-receipts',$1)",[value]);
+ await assert.rejects(as(users[2],"insert into storage.objects(bucket_id,name) values('payment-receipts',$1)",[users[1]+'/33333333-3333-4333-8333-333333333333']));
+ const record=(receipt=path,request='qr-payment',user=users[1])=>as(user,'select public.roomie_record_qr_settlement($1,$2,5000,$3,$4,$5) id',[house,member(users[0]),'2000-01-01',request,receipt]);
+ await assert.rejects(record(path,'wrong-owner',users[2]));await assert.rejects(record(null,'missing'));await assert.rejects(record(users[1]+'/44444444-4444-4444-8444-444444444444','not-uploaded'));
+ const id=(await record()).rows[0].id;assert.equal((await record()).rows[0].id,id);await assert.rejects(record(orphan));await assert.rejects(record(path,'other-record'));
+ assert.equal((await as(users[0],"select * from storage.objects where bucket_id='payment-receipts' and name=$1",[path])).rows.length,1);
+ for(const user of [users[2],users[3]])assert.equal((await as(user,"select * from storage.objects where bucket_id='payment-receipts'")).rows.length,0);
+ assert.equal((await as(users[1],'update storage.objects set name=name where name=$1 returning id',[path])).rows.length,0);
+ assert.equal((await as(users[1],'delete from storage.objects where name=$1 returning id',[path])).rows.length,0);
+ assert.equal((await as(users[1],'delete from storage.objects where name=$1 returning id',[orphan])).rows.length,1);
+ const net=async()=>{const data=(await as(users[1],'select public.roomie_settlement_dashboard($1) data',[house])).rows[0].data;assert.equal(data.settlements[0].receipt_path,path);return Number(data.balances.find(b=>b.user_id===users[1]).net);};
+ assert.equal(await net(),-5000);await assert.rejects(as(users[1],'select public.roomie_decide_settlement($1,true)',[id]));
+ await as(users[0],'select public.roomie_decide_settlement($1,true)',[id]);await as(users[0],'select public.roomie_decide_settlement($1,true)',[id]);assert.equal(await net(),0);
+ assert.equal((await as(users[1],"select * from storage.objects where bucket_id='payment-qr'")).rows.length,0);
+ assert.equal((await as(users[0],"select * from storage.objects where name=$1",[path])).rows.length,1);
+ const source=await readFile(new URL('../supabase/migrations/20261021000100_qr_repayments.sql',import.meta.url),'utf8');assert.equal(fallback.split('$roomie_qr_pay$')[1].trim(),source.slice(7,source.lastIndexOf('commit;')).trim());
+ }finally{await db.close();}
+});
