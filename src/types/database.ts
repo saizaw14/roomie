@@ -1,4 +1,4 @@
-export type Settlement = { id:string; household_id:string; sender_id:string; recipient_id:string; amount_minor:number; currency:string; status:'pending'|'confirmed'|'rejected'; payment_date:string; created_by:string; created_at:string; decided_at:string|null; decided_by:string|null };
+export type Settlement = { receipt_path:string|null; receipt_object_id:string|null; id:string; household_id:string; sender_id:string; recipient_id:string; amount_minor:number; currency:string; status:'pending'|'confirmed'|'rejected'; payment_date:string; created_by:string; created_at:string; decided_at:string|null; decided_by:string|null };
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 export type Expense = { id: string; household_id: string; title: string; category: string; amount_minor: number; currency: string; expense_date: string; notes: string; split_method: 'equal' | 'exact' | 'percentage'; status: 'posted' | 'void'; created_by: string; created_at: string; updated_at: string; version: number; request_key: string; request_payload: Json; voided_by: string | null; voided_at: string | null; void_reason: string | null };
 export type ExpensePayer = { expense_id: string; household_id: string; member_id: string; paid_minor: number };
@@ -28,6 +28,7 @@ export type Database = {
   Views: { [_ in never]: never };
   Functions: {
    roomie_settlement_dashboard: { Args:{p_household:string}; Returns:Json };
+   roomie_record_qr_settlement: { Args:{p_household:string;p_recipient:string;p_amount:number;p_date:string;p_request:string;p_receipt:string}; Returns:string };
    roomie_record_settlement: { Args:{p_household:string;p_recipient:string;p_amount:number;p_date:string;p_request:string}; Returns:string };
    roomie_decide_settlement: { Args:{p_id:string;p_confirm:boolean}; Returns:undefined };
    roomie_create_expense: { Args: ExpenseArgs & { p_request: string }; Returns: string };

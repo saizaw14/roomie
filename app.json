@@ -41,6 +41,16 @@
           "cameraPermission": false,
           "microphonePermission": false
         }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow Roomie to save a payment QR image to your gallery.",
+          "savePhotosPermission": "Allow Roomie to save payment QR images.",
+          "granularPermissions": [
+            "photo"
+          ]
+        }
       ]
     ],
     "experiments": {
