@@ -18,13 +18,13 @@ import { decideSettlement,recordSettlement,settlementError } from './api';
 import { QrPaymentScreen } from './qr-payment-screen';
 import { settlementSuggestions } from './domain';
 export function SettlementScreen(){
- const params=useLocalSearchParams<{household?:string;view?:string}>();const houses=useHouseholds();const house=params.household?houses.houses.find(h=>h.id===params.household):houses.current;
+ const params=useLocalSearchParams<{household?:string;view?:string;payment?:string}>();const houses=useHouseholds();const house=params.household?houses.houses.find(h=>h.id===params.household):houses.current;
  const {session}=useAuth();const query=useSettlements(house?.id??'');const members=useExpenseMembers(house?.id??'');const client=useQueryClient();
  const [requestSeed]=useState(()=>`${Date.now()}-${Math.random().toString(36).slice(2)}`);const [sequence,setSequence]=useState(0);
  const [form,setForm]=useState<{recipient:string;amount:string;date:string;request:string}|null>(null);const [locked,setLocked]=useState(false);const [calendar,setCalendar]=useState(false);const [error,setError]=useState<string|null>(null);const [message,setMessage]=useState('');const lock=useRef(false);
  const [history,setHistory]=useState(params.view==='history');
  const [pay,setPay]=useState<{recipient:string;amount:number}|null>(null);
- const [decision,setDecision]=useState<{id:string;confirm:boolean}|null>(null);
+ const [decision,setDecision]=useState<{id:string;confirm:boolean}|null>(()=>params.payment?{id:params.payment,confirm:true}:null);
  const refresh=async()=>{await Promise.all([client.invalidateQueries({queryKey:['settlements']}),client.invalidateQueries({queryKey:['activity']})]);};
  const create=useMutation({mutationFn:async()=>{if(!form||!house)throw new Error();return recordSettlement(house.id,form.recipient,parseMinor(form.amount,false,house.currency),form.date,form.request);},retry:false,onSuccess:async()=>{await refresh();setForm(null);setLocked(false);setMessage('Repayment recorded. Waiting for the recipient to confirm.');}});
  const decide=useMutation({mutationFn:({id,confirm}:{id:string;confirm:boolean})=>decideSettlement(id,confirm),retry:false,onSuccess:async()=>{await refresh();setMessage('Repayment decision saved.');}});
@@ -46,7 +46,7 @@ export function SettlementScreen(){
    {calendar?<DateRangeCalendar single start={form.date} end={form.date} onChange={range=>{setForm({...form,date:range.start});setCalendar(false);}}/>:null}
    <Text style={s.small}>Record only a payment you have already sent. The recipient will review it. This is not a request for them to pay you.</Text>
    <Button appearance="auth" label={locked?'Retry same repayment':'Record payment sent'} loading={busy} onPress={()=>void submit()}/><Button appearance="auth" variant="secondary" label={locked?'Check repayment history':'Cancel'} disabled={busy} onPress={()=>{setForm(null);setLocked(false);setError(null);void query.refetch();}}/>
-  </>:decision?(()=>{const row=query.data?.settlements.find(r=>r.id===decision.id);return row?<PaymentReview row={row} sender={name(row.sender_id)} recipient={name(row.recipient_id)} format={format} balances={query.data?.balances??[]} canDecide={row.recipient_id===mine?.member_id} busy={busy} onDecide={confirm=>{setError(null);decide.mutate({id:row.id,confirm},{onError:e=>setError(settlementError(e))});}} onBack={()=>{setDecision(null);setError(null);setMessage('');}}/>:<Button appearance="auth" label="Back to history" onPress={()=>setDecision(null)}/>;})():<>
+  </>:decision?(()=>{const row=query.data?.settlements.find(r=>r.id===decision.id);return query.isPending?<Text style={s.body}>Loading payment…</Text>:row?<PaymentReview row={row} sender={name(row.sender_id)} recipient={name(row.recipient_id)} format={format} balances={query.data?.balances??[]} canDecide={row.recipient_id===mine?.member_id} busy={busy} onDecide={confirm=>{setError(null);decide.mutate({id:row.id,confirm},{onError:e=>setError(settlementError(e))});}} onBack={()=>{setDecision(null);setError(null);setMessage('');}}/>:<Button appearance="auth" label="Back to history" onPress={()=>setDecision(null)}/>;})():<>
    {houses.isPending||query.isPending&&!!house?<Text style={s.body}>Loading balances…</Text>:null}
    {houses.isError?<><Text style={s.error}>Households could not be loaded.</Text><Button appearance="auth" label="Retry households" onPress={()=>void houses.refetch()}/></>:!house?<Text style={s.body}>Create or join a household first.</Text>:null}
    {query.isError?<><Text accessibilityRole="alert" style={s.error}>{settlementError(query.error)}</Text><Button appearance="auth" label="Retry balances" onPress={()=>void query.refetch()}/></>:null}

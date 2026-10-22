@@ -21,7 +21,7 @@ function Navigation() {
     </Stack.Protected>
     <Stack.Protected guard={!!session && !recovering}>
       <Stack.Screen name="expenses/index" /><Stack.Screen name="expenses/create" /><Stack.Screen name="expenses/edit" /><Stack.Screen name="expenses/[id]" />
-      <Stack.Screen name="settlements/index" options={householdSheetOptions} /><Stack.Screen name="home" /><Stack.Screen name="profile" />
+      <Stack.Screen name="notifications" options={householdSheetOptions} /><Stack.Screen name="settlements/index" options={householdSheetOptions} /><Stack.Screen name="home" /><Stack.Screen name="profile" />
       <Stack.Screen name="households/index" options={householdSheetOptions} /><Stack.Screen name="households/create" options={householdSheetOptions} /><Stack.Screen name="households/[id]" options={householdSheetOptions} />
     </Stack.Protected>
     <Stack.Protected guard={!!session}>

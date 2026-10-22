@@ -13,6 +13,7 @@ test('QR sharing and receipts enforce eligibility, ownership, immutable evidence
  create schema supabase_migrations;create table supabase_migrations.schema_migrations(version text primary key,name text,statements text[]);`);
  for(const file of ['20261008000100_profiles','20261009000100_households','20261012000100_expenses','20261015000100_household_currencies','20261019000100_settlements','20261020000100_payment_qr'])await db.exec(await readFile(new URL('../supabase/migrations/'+file+'.sql',import.meta.url),'utf8'));
  const fallback=await readFile(new URL('../docs/supabase-dashboard-qr-repayments.sql',import.meta.url),'utf8');await db.exec(fallback);
+ const notifications=await readFile(new URL('../docs/supabase-dashboard-receipt-notifications.sql',import.meta.url),'utf8');await db.exec(notifications);
  const users=Array.from({length:4},(_,i)=>`00000000-0000-4000-8000-00000000000${i+1}`);
  for(const id of users)await db.query('insert into auth.users values($1,$2)',[id,{display_name:id.slice(-1)}]);
  const as=(user,sql,args=[],role='authenticated')=>db.transaction(async tx=>{await tx.exec(`set local role ${role}`);await tx.query("select set_config('request.jwt.claim.sub',$1,true)",[user]);return tx.query(sql,args);});
@@ -30,6 +31,13 @@ test('QR sharing and receipts enforce eligibility, ownership, immutable evidence
  const record=(receipt=path,request='qr-payment',user=users[1])=>as(user,'select public.roomie_record_qr_settlement($1,$2,5000,$3,$4,$5) id',[house,member(users[0]),'2000-01-01',request,receipt]);
  await assert.rejects(record(path,'wrong-owner',users[2]));await assert.rejects(record(null,'missing'));await assert.rejects(record(users[1]+'/44444444-4444-4444-8444-444444444444','not-uploaded'));
  const id=(await record()).rows[0].id;assert.equal((await record()).rows[0].id,id);await assert.rejects(record(orphan));await assert.rejects(record(path,'other-record'));
+ const notices=async user=>(await as(user,'select public.roomie_receipt_notifications() data')).rows[0].data;
+ const incoming=await notices(users[0]);assert.equal(incoming.length,1);assert.equal(incoming[0].settlement_id,id);assert.equal(incoming[0].read_at,null);
+ for(const user of users.slice(1))assert.equal((await notices(user)).length,0);
+ await as(users[1],'select public.roomie_read_receipt_notification($1)',[incoming[0].id]);assert.equal((await notices(users[0]))[0].read_at,null);
+ await assert.rejects(as(users[1],'select * from public.receipt_notifications'));
+ await as(users[0],'select public.roomie_read_receipt_notification($1)',[incoming[0].id]);assert.ok((await notices(users[0]))[0].read_at);
+ const notificationSource=await readFile(new URL('../supabase/migrations/20261022000100_receipt_notifications.sql',import.meta.url),'utf8');assert.equal(notifications.split('$roomie_notifications$')[1].trim(),notificationSource.slice(6,notificationSource.lastIndexOf('commit;')).trim());
  assert.equal((await as(users[0],"select * from storage.objects where bucket_id='payment-receipts' and name=$1",[path])).rows.length,1);
  for(const user of [users[2],users[3]])assert.equal((await as(user,"select * from storage.objects where bucket_id='payment-receipts'")).rows.length,0);
  assert.equal((await as(users[1],'update storage.objects set name=name where name=$1 returning id',[path])).rows.length,0);

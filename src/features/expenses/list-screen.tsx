@@ -1,3 +1,4 @@
+import { NotificationBell } from '@/features/notifications/notifications';
 import { Link } from 'expo-router';
 import { useState } from 'react';
 import { Modal,ScrollView,Text,View,Pressable,StyleSheet } from 'react-native';
@@ -35,7 +36,7 @@ export function ExpenseListScreen() {
  const groups=Array.from(grouped,([date,expenses])=>({date,expenses}));
  if(!loaded&&!fontError)return <LoadingScreen/>;
  return <View style={d.canvas}><SafeAreaView style={d.safe}>
-  <View style={d.header}><Link href="/households" asChild><Pressable accessibilityRole="button" accessibilityLabel="Switch household" style={d.houseSwitch}><View style={d.houseIcon}><DashboardIcon name="building"/></View><View style={{flex:1}}><Text style={d.small}>Household</Text><Text numberOfLines={1} style={d.bold}>{house.current?.name??(house.isPending?'Loading household…':'No household yet')}</Text></View><DashboardIcon name="chevron"/></Pressable></Link><Pressable accessibilityRole="button" accessibilityLabel="Notifications" style={d.iconButton} onPress={()=>setNotice('notifications')}><DashboardIcon name="bell" color="#647084"/></Pressable></View>
+  <View style={d.header}><Link href="/households" asChild><Pressable accessibilityRole="button" accessibilityLabel="Switch household" style={d.houseSwitch}><View style={d.houseIcon}><DashboardIcon name="building"/></View><View style={{flex:1}}><Text style={d.small}>Household</Text><Text numberOfLines={1} style={d.bold}>{house.current?.name??(house.isPending?'Loading household…':'No household yet')}</Text></View><DashboardIcon name="chevron"/></Pressable></Link><NotificationBell/></View>
   <ScrollView contentContainerStyle={x.content}>
   {house.isPending?<ExpenseCard><Text style={s.body}>Loading your household…</Text></ExpenseCard>:house.isError?<ExpenseCard><Text accessibilityRole="alert" style={s.error}>{householdError(house.error)}</Text><Button appearance="auth" label="Retry households" loading={house.isFetching} onPress={()=>void house.refetch()}/></ExpenseCard>:house.isSuccess&&!house.current?<HouseholdEmptyState expenses/>:null}
   {house.current?<>

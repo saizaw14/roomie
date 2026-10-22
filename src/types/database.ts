@@ -27,6 +27,8 @@ export type Database = {
   };
   Views: { [_ in never]: never };
   Functions: {
+   roomie_receipt_notifications: { Args:Record<string,never>; Returns:Json };
+   roomie_read_receipt_notification: { Args:{p_id:string}; Returns:undefined };
    roomie_settlement_dashboard: { Args:{p_household:string}; Returns:Json };
    roomie_record_qr_settlement: { Args:{p_household:string;p_recipient:string;p_amount:number;p_date:string;p_request:string;p_receipt:string}; Returns:string };
    roomie_record_settlement: { Args:{p_household:string;p_recipient:string;p_amount:number;p_date:string;p_request:string}; Returns:string };
