@@ -151,3 +151,15 @@ The shared QR-save helper imported Expo MediaLibrary at module scope. Its native
 ## Settle Up published-design alignment (2026-10-21)
 
 Compared the current published Figma JS/CSS (same latest asset revision) against Settle Up. Replaced the combined suggestions list with personal You owe/You’re owed sections; matched wallet net-summary dimensions, signed amount, small breakdown, emphasized compact Pay online action, and secondary history/manual-entry links. Home pending-review links open history directly. QR payment now follows the receipt image/overlaid removal affordance, required-state styling, upload icon tile, payment instructions, recipient-upload badge, and success icon/banner layout. Sample amounts and unverified bank-verification claims remain excluded. Financial permissions, receipt evidence and server transitions are unchanged. A fresh native-browser attempt returned “Computer Use permissions are not granted”; exact rendered visual equivalence remains unverified.
+
+## Receipt submission notifications — 2026-10-22
+
+Added transactionally generated, recipient-only in-app receipt notifications with retry deduplication, backfill of pending receipts, read state, foreground polling, Home/Expenses bell badges, Profile inbox entry, and direct repayment review links. New migration and SQL Editor fallback: `20261022000100_receipt_notifications` / `docs/supabase-dashboard-receipt-notifications.sql`. Setup: `docs/receipt-notifications-setup.md`. Requires applying the new migration in hosted Supabase; phone push delivery is outside this implementation. Extended database tests cover recipient visibility, unauthorized reads/read updates, exactly-once retries, and fallback parity.
+
+## Notification sheet design — 2026-10-22
+
+Aligned the receipt inbox with the published Figma Make notification sheet: compact divided rows, 40px amber wallet tiles, payment titles and waiting status, small dates, dynamic attention subtitle, outlined full-width “Mark all as read,” and the coral unread bell dot. Uses real receipt/household data and existing local icons/fonts. Mark-all uses the existing authorized read RPC in bounded batches, refreshes partial failures, and leaves receipts arriving after the snapshot unread. No additional SQL changes. Figma Make screenshot API is unsupported and Computer Use permission was unavailable, so rendered visual comparison remains unverified.
+
+## Home payment review reminder — 2026-10-22
+
+Replaced the generic review card and large action button with the published Figma Home pending-payment reminder: pale amber background/border, 40px clock tile, compact title and sender/amount subtitle, and trailing chevron. The entire card opens repayment review; one pending payment opens its details directly, multiple payments open history. Counts and amounts use the selected household’s pending incoming payments. No SQL changes. Rendered visual comparison remains unavailable because Computer Use permission is not granted.

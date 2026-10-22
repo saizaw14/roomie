@@ -1,3 +1,4 @@
+import { NotificationBell } from '@/features/notifications/notifications';
 import { Link } from 'expo-router';
 import { Image } from 'expo-image';
 import { useRef,useState } from 'react';
@@ -19,6 +20,7 @@ import { useHouseholds } from './use-households';
 import { HouseholdEmptyState } from './household-empty-state';
 import { householdError } from './validation';
 import { useInviteIntent } from './invite-intent';
+import { authColors as c,authFonts as f } from '@/theme/auth-tokens';
 import type { ActivityEvent } from '@/types/database';
 
 export function HomeScreen() {
@@ -42,7 +44,7 @@ export function HomeScreen() {
    <Link href="/households" asChild><Pressable accessibilityRole="button" accessibilityLabel={`Switch household, ${house?.name??'no household selected'}`} style={s.houseSwitch}>
     <View style={s.houseIcon}><DashboardIcon name="building"/></View><View style={{flex:1}}><Text style={s.small}>Household</Text><Text numberOfLines={1} style={s.bold}>{house?.name??(houses.isPending?'Loading household…':'No household yet')}</Text></View><DashboardIcon name="chevron"/>
    </Pressable></Link>
-   <Pressable accessibilityRole="button" accessibilityLabel="Notifications, coming soon" onPress={()=>notice==='notifications'?setNotice(null):openNotice('notifications')} style={s.iconButton}><DashboardIcon name="bell" color="#647084"/></Pressable>
+   <NotificationBell/>
   </View>
   <ScrollView ref={scroll} contentContainerStyle={s.content}>
    {profile.data?.display_name?<Text style={s.small}>Welcome home, {profile.data.display_name}.</Text>:null}
@@ -59,7 +61,13 @@ export function HomeScreen() {
      <View style={s.balanceActions}><Link href={{pathname:'/expenses/create',params:{household:house.id}}} asChild><Button appearance="auth" label="Add expense" leadingIcon={<DashboardIcon name="plus" color="#0b5f59"/>} style={s.primaryAction} labelStyle={s.primaryLabel}/></Link><Link href={{pathname:'/settlements',params:{household:house.id}}} asChild><Button appearance="auth" label="Settle up" leadingIcon={<DashboardIcon name="wallet" color="white"/>} variant="secondary" style={s.secondaryAction} labelStyle={s.secondaryLabel}/></Link></View>
     </View>
     <View style={s.note}><DashboardIcon name="shield" color="#647084"/><Text style={[s.small,{flex:1}]}>Balances include posted expenses and confirmed repayments. Pending payments have no effect.</Text></View>
-    {pending.length?<DashboardCard><Text style={s.heading}>{pending.length} payment{pending.length===1?'':'s'} need your review</Text><Text style={s.small}>Confirm only money you have received outside Roomie.</Text><Link href={{pathname:'/settlements',params:{household:house.id,view:'history'}}} asChild><Button appearance="auth" label="Review repayments"/></Link></DashboardCard>:null}
+    {pending.length?<Link href={{pathname:'/settlements',params:{household:house.id,view:'history',...(pending.length===1?{payment:pending[0].id}:{})}}} asChild>
+     <Pressable accessibilityRole="button" accessibilityLabel={`${pending.length} payment${pending.length===1?' needs':'s need'} your review. Review incoming repayments.`} style={reminder.card}>
+      <View style={reminder.icon}><Image source={require('../../../assets/images/dashboard/clock.svg')} style={reminder.clock} contentFit="contain"/></View>
+      <View style={reminder.copy}><Text style={reminder.title}>{pending.length} payment{pending.length===1?' needs':'s need'} your review</Text><Text style={reminder.detail}>{pending.length===1?`${members.data?.find(m=>m.id===pending[0].sender_id)?.display_name??'A household member'} recorded ${money(pending[0].amount_minor)} sent to you`:'Incoming payments are waiting for your confirmation'}</Text></View>
+      <Image source={require('../../../assets/images/dashboard/chevron.svg')} style={reminder.chevron} tintColor={c.ink} contentFit="contain"/>
+     </Pressable>
+    </Link>:null}
     <View style={s.section}><Text accessibilityRole="header" style={s.heading}>Coming up</Text><Pressable accessibilityRole="button" accessibilityLabel="About upcoming bills" onPress={()=>openNotice('bills')}><Text style={s.link}>About bills</Text></Pressable></View>
     <DashboardCard><View style={{flexDirection:'row',gap:12,alignItems:'center'}}><View style={s.emptyIcon}><DashboardIcon name="calendar"/></View><View style={{flex:1}}><Text style={s.bold}>Bill reminders coming soon</Text><Text style={s.small}>Keep track of recurring household costs when this feature is available.</Text></View></View></DashboardCard>
     <View style={s.section}><Text accessibilityRole="header" style={s.heading}>Recent activity</Text><Pressable accessibilityRole="button" accessibilityState={{expanded}} onPress={()=>setExpanded(v=>!v)}><Text style={s.link}>{expanded?'Show less':'View more'}</Text></Pressable></View>
@@ -89,3 +97,12 @@ function ActivityRow({event,name,currency}:{event:ActivityEvent;name:string;curr
   <View style={s.emptyIcon}><DashboardIcon name={action==='Posted'?'receipt':'history'}/></View><View style={{flex:1}}><Text style={s.bold}>{title}</Text><Text style={s.small}>{action} by {name}</Text><Text style={[s.small,{fontSize:10}]}>{new Date(event.created_at).toLocaleString()}</Text></View>{amount?<Text style={s.bold}>{amount}</Text>:null}
  </Pressable></Link>;
 }
+
+// Published Figma Home pending-card; parent content supplies its 14px top spacing.
+const reminder=StyleSheet.create({
+ card:{minHeight:74,padding:14,marginBottom:10,backgroundColor:'#fff5dd',borderWidth:1,borderColor:'#f4dfad',borderRadius:16,flexDirection:'row',alignItems:'center',gap:12},
+ icon:{width:40,height:40,borderRadius:12,backgroundColor:'#ffe9b6',alignItems:'center',justifyContent:'center'},
+ clock:{width:20,height:20},chevron:{width:18,height:18},
+ copy:{flex:1,minWidth:0},title:{fontFamily:f.bold,fontSize:13,lineHeight:18,color:c.ink},
+ detail:{fontFamily:f.regular,fontSize:12,lineHeight:18,color:c.muted,marginTop:4},
+});
