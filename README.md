@@ -43,3 +43,5 @@ The welcome illustration uses clearly labeled fictional figures. No illustration
 Do not use the original starter reset script: it can replace the Roomie source. Some inactive starter helper components/assets are retained to preserve the original setup; the layout no longer mounts their tabs or animated overlay. `/explore` redirects to `/` for old links.
 
 Settle Up (balances, repayment recording, and recipient confirmation) setup: [docs/settlements-setup.md](docs/settlements-setup.md). Apply its new migration after household currencies before testing the feature.
+
+Recurring bills: apply the new migration once and follow [Bills setup](docs/bills-setup.md). Owners can create fixed/variable weekly or monthly reminders; active members review and explicitly post each occurrence as an expense. Reminders alone never change balances.

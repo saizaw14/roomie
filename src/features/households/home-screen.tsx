@@ -1,7 +1,8 @@
+import { UpcomingBills } from '@/features/bills/upcoming-card';
 import { NotificationBell } from '@/features/notifications/notifications';
 import { Link } from 'expo-router';
 import { Image } from 'expo-image';
-import { useRef,useState } from 'react';
+import { useState } from 'react';
 import { Pressable,ScrollView,StyleSheet,Text,View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/components/ui/button';
@@ -28,9 +29,6 @@ export function HomeScreen() {
  const profile=useProfile();const houses=useHouseholds();const intent=useInviteIntent();
  const house=houses.current;const expenses=useExpenses(house?.id??'');const members=useExpenseMembers(house?.id??'');const settlements=useSettlements(house?.id??'');
  const [expanded,setExpanded]=useState(false);const activity=useActivity(house?.id??'',expanded);
- const scroll=useRef<ScrollView>(null);
- const [notice,setNotice]=useState<'bills'|'notifications'|null>(null);
- function openNotice(value:'bills'|'notifications'){setNotice(value);scroll.current?.scrollTo({y:0,animated:true});}
  let summary:ReturnType<typeof expenseSummary>|null=null;let balanceError:string|null=null;
  if(expenses.isSuccess&&houses.membership)try{summary=expenseSummary(expenses.data,houses.membership.id);}catch(failure){balanceError=expenseError(failure);}
  if(summary&&settlements.isSuccess){const mine=settlements.data.balances.find(b=>b.member_id===houses.membership?.id);if(mine)summary={...summary,net:mine.net};else balanceError='Your membership balance is unavailable.';}
@@ -46,9 +44,8 @@ export function HomeScreen() {
    </Pressable></Link>
    <NotificationBell/>
   </View>
-  <ScrollView ref={scroll} contentContainerStyle={s.content}>
+  <ScrollView contentContainerStyle={s.content}>
    {profile.data?.display_name?<Text style={s.small}>Welcome home, {profile.data.display_name}.</Text>:null}
-   {notice?<DashboardCard><Text style={s.heading}>{notice==='bills'?'Bills coming soon':'Notifications coming soon'}</Text><Text style={s.body}>{notice==='bills'?'Recurring bills and due-date reminders will appear here once they are available.':'Bill notifications will appear here when available. Review incoming repayments in Settle up.'}</Text><Button appearance="auth" label="Got it" variant="secondary" onPress={()=>setNotice(null)}/></DashboardCard>:null}
    {intent.code?<Link href={{pathname:'/join',params:{code:intent.code}}} asChild><Button appearance="auth" label="Continue household invitation"/></Link>:null}
    {houses.isPending?<DashboardCard><Text style={s.body}>Loading your household…</Text></DashboardCard>:null}
    {houses.isError?<DashboardCard><Text accessibilityRole="alert" style={s.error}>{householdError(houses.error)}</Text><Button appearance="auth" label="Retry households" loading={houses.isFetching} onPress={()=>void houses.refetch()}/></DashboardCard>:null}
@@ -68,8 +65,7 @@ export function HomeScreen() {
       <Image source={require('../../../assets/images/dashboard/chevron.svg')} style={reminder.chevron} tintColor={c.ink} contentFit="contain"/>
      </Pressable>
     </Link>:null}
-    <View style={s.section}><Text accessibilityRole="header" style={s.heading}>Coming up</Text><Pressable accessibilityRole="button" accessibilityLabel="About upcoming bills" onPress={()=>openNotice('bills')}><Text style={s.link}>About bills</Text></Pressable></View>
-    <DashboardCard><View style={{flexDirection:'row',gap:12,alignItems:'center'}}><View style={s.emptyIcon}><DashboardIcon name="calendar"/></View><View style={{flex:1}}><Text style={s.bold}>Bill reminders coming soon</Text><Text style={s.small}>Keep track of recurring household costs when this feature is available.</Text></View></View></DashboardCard>
+    <UpcomingBills house={house.id} currency={house.currency}/>
     <View style={s.section}><Text accessibilityRole="header" style={s.heading}>Recent activity</Text><Pressable accessibilityRole="button" accessibilityState={{expanded}} onPress={()=>setExpanded(v=>!v)}><Text style={s.link}>{expanded?'Show less':'View more'}</Text></Pressable></View>
     <DashboardCard>
      {activity.isPending?<Text style={s.small}>Loading activity…</Text>:activity.isError?<><Text accessibilityRole="alert" style={s.error}>{expenseError(activity.error)}</Text><Button appearance="auth" variant="secondary" label="Retry activity" onPress={()=>void activity.refetch()}/></>:activity.data.length===0?<><Text style={s.bold}>Your shared story starts here</Text><Text style={s.small}>Posted, edited, and voided expenses will appear here.</Text></>:activity.data.map(event=><ActivityRow key={event.id} event={event} name={memberName(event.actor_id)} currency={house.currency}/>)}
@@ -83,7 +79,7 @@ export function HomeScreen() {
   <View style={s.nav}>
    <Link href="/home" asChild><Pressable accessibilityRole="button" accessibilityState={{selected:true}} style={s.navItem}><View style={s.indicator}/><DashboardIcon name="home"/><Text style={[s.navLabel,s.activeNav]}>Home</Text></Pressable></Link>
    <Link href="/expenses" asChild><Pressable accessibilityRole="button" style={s.navItem}><DashboardIcon name="receipt" color="#8a929d"/><Text style={s.navLabel}>Expenses</Text></Pressable></Link>
-   <Pressable accessibilityRole="button" accessibilityLabel="Bills, coming soon" style={s.navItem} onPress={()=>openNotice('bills')}><DashboardIcon name="calendar" color="#8a929d"/><Text style={s.navLabel}>Bills</Text></Pressable>
+   <Link href="/bills" asChild><Pressable accessibilityRole="button" style={s.navItem}><DashboardIcon name="calendar" color="#8a929d"/><Text style={s.navLabel}>Bills</Text></Pressable></Link>
    <Link href="/profile" asChild><Pressable accessibilityRole="button" style={s.navItem}><DashboardIcon name="user" color="#8a929d"/><Text style={s.navLabel}>Me</Text></Pressable></Link>
   </View>
  </SafeAreaView></View>;
