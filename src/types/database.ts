@@ -27,6 +27,10 @@ export type Database = {
   };
   Views: { [_ in never]: never };
   Functions: {
+   roomie_bill_dashboard: { Args:{p_household:string}; Returns:Json };
+   roomie_create_bill: { Args:{p_household:string;p_title:string;p_category:string;p_amount:number|null;p_frequency:string;p_due:string;p_payer:string;p_members:string[];p_request:string}; Returns:string };
+   roomie_set_bill_active: { Args:{p_id:string;p_active:boolean;p_version:number}; Returns:undefined };
+   roomie_post_bill: { Args:{p_id:string;p_due:string;p_amount:number;p_paid_date:string;p_payer:string;p_members:string[]}; Returns:string };
    roomie_receipt_notifications: { Args:Record<string,never>; Returns:Json };
    roomie_read_receipt_notification: { Args:{p_id:string}; Returns:undefined };
    roomie_settlement_dashboard: { Args:{p_household:string}; Returns:Json };

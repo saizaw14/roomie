@@ -163,3 +163,11 @@ Aligned the receipt inbox with the published Figma Make notification sheet: comp
 ## Home payment review reminder — 2026-10-22
 
 Replaced the generic review card and large action button with the published Figma Home pending-payment reminder: pale amber background/border, 40px clock tile, compact title and sender/amount subtitle, and trailing chevron. The entire card opens repayment review; one pending payment opens its details directly, multiple payments open history. Counts and amounts use the selected household’s pending incoming payments. No SQL changes. Rendered visual comparison remains unavailable because Computer Use permission is not granted.
+
+## Bills dashboard and recurring bills — 2026-10-23
+
+Implemented the published Figma Bills layout with household header, “Recurring bills / Stay ahead,” blue reminder banner, needs-attention/upcoming/paused cards, owner Add bill, calendar-based dates, fixed/variable amounts, and review/post sheets. The Bills tab is linked from Home, Expenses, and Me; Home Coming up now reads real active reminders. Reused local icons, fonts, shared sheets, safe areas, and currency formatting. No sample bill records or new dependencies.
+
+Added `20261023000100_recurring_bills.sql` and matching SQL Editor fallback `docs/supabase-dashboard-bills.sql`: owner-only template creation/pause/resume, active-member review/post, retained participant references, RLS, date-only weekly/monthly schedules with original-day month-end clamping, and exactly-once occurrence links to normal transactional expenses. Reminders have no balance effect; only explicit posting creates allocations and revisions. Equal template splits in this version. One outstanding occurrence per template advances after posting, preserving missed periods. No scheduled push delivery, template editing, or skip action. Setup and verification: `docs/bills-setup.md`.
+
+Lint and TypeScript checks pass; all 70 tests pass, including real database authorization, no reminder financial effect, currency inheritance, duplicate/changed retries, pause/resume, left-member denial, and date anchors. Web static export passes. Figma Make screenshot API is unsupported and Computer Use permission remains unavailable; native/visual/live hosted interaction verification remains outstanding. Apply the new migration before testing the hosted feature.

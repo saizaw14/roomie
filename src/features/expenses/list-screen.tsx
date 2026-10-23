@@ -1,12 +1,11 @@
 import { NotificationBell } from '@/features/notifications/notifications';
 import { Link } from 'expo-router';
 import { useState } from 'react';
-import { Modal,ScrollView,Text,View,Pressable,StyleSheet } from 'react-native';
+import { ScrollView,Text,View,Pressable,StyleSheet } from 'react-native';
 import { Button } from '@/components/ui/button';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LoadingScreen } from '@/components/ui/loading-screen';
 import { useRoomieFonts } from '@/hooks/use-roomie-fonts';
-import { HouseholdSheet } from '@/features/households/household-sheet';
 import { DashboardIcon,styles as d } from '@/features/dashboard/components';
 import { ExpenseFilterSheet,ExpenseNavigation,x } from './dashboard-ui';
 import { HouseholdEmptyState } from '@/features/households/household-empty-state';
@@ -18,7 +17,7 @@ import { useExpenses,useExpenseMembers } from './hooks';
 import { expenseError } from './validation';
 import { ExpenseCard,Choice,Status,Icon,s } from './ui';
 export function ExpenseListScreen() {
- const [loaded,fontError]=useRoomieFonts();const [notice,setNotice]=useState<'bills'|'notifications'|null>(null);
+ const [loaded,fontError]=useRoomieFonts();
  const house=useHouseholds();const {session}=useAuth();const query=useExpenses(house.current?.id??'');const members=useExpenseMembers(house.current?.id??'');
  const [category,setCategory]=useState('All');const [period,setPeriod]=useState('This month');const [status,setStatus]=useState('All');const [filters,setFilters]=useState(false);
  const [start,setStart]=useState('');const [end,setEnd]=useState('');
@@ -60,9 +59,8 @@ export function ExpenseListScreen() {
 
   </>:null}
   </ScrollView>
-  <ExpenseNavigation onBills={()=>setNotice('bills')}/>
+  <ExpenseNavigation/>
  </SafeAreaView>
  {filters?<ExpenseFilterSheet value={{period,status,start,end}} onClose={()=>setFilters(false)} onApply={value=>{setPeriod(value.period);setStatus(value.status);setStart(value.start);setEnd(value.end);setFilters(false);}}/>:null}
- {notice?<Modal transparent animationType="fade" onRequestClose={()=>setNotice(null)}><HouseholdSheet title={notice==='bills'?'Bills':'Notifications'} subtitle="Coming soon" onClose={()=>setNotice(null)}><Text style={s.body}>{notice==='bills'?'Recurring bills and due-date reminders will be available in a future milestone.':'Bill reminders and payment request notifications will appear here when available.'}</Text><Button appearance="auth" label="Got it" onPress={()=>setNotice(null)}/></HouseholdSheet></Modal>:null}
  </View>;
 }
