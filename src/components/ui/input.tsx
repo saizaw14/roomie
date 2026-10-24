@@ -1,16 +1,17 @@
 import { useState, useId, type Ref } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View, type TextInputProps, type StyleProp, type ViewStyle } from 'react-native';
 import { authColors, authFonts } from '@/theme/auth-tokens';
 import { colors, radius, spacing } from '@/theme/tokens';
-type Props = TextInputProps & { label: string; appearance?: 'default' | 'auth'; revealable?: boolean; error?: string; hint?: string; ref?: Ref<TextInput> };
-export function Input({ label, appearance = 'default', revealable = false, error, hint, style, ...props }: Props) {
+type Props = TextInputProps & { label: string; prefix?: string; containerStyle?: StyleProp<ViewStyle>; appearance?: 'default' | 'auth'; revealable?: boolean; error?: string; hint?: string; ref?: Ref<TextInput> };
+export function Input({ label, prefix, containerStyle, appearance = 'default', revealable = false, error, hint, style, ...props }: Props) {
   const id = useId();
   const [visible, setVisible] = useState(false);
   const [focused, setFocused] = useState(false);
   const compact = appearance === 'auth';
-  return <View style={[styles.container, compact && styles.authContainer]}>
+  return <View style={[styles.container, compact && styles.authContainer, containerStyle]}>
     <Text nativeID={id} style={[styles.label, compact && styles.authLabel]}>{label}</Text>
     <View style={[styles.frame, compact && styles.authFrame, focused && compact && styles.focused, error && styles.invalid]}>
+      {prefix ? <Text style={styles.prefix}>{prefix}</Text> : null}
       <TextInput {...props} secureTextEntry={revealable ? !visible : props.secureTextEntry}
         onFocus={event => { setFocused(true); props.onFocus?.(event); }}
         onBlur={event => { setFocused(false); props.onBlur?.(event); }}
@@ -27,6 +28,7 @@ export function Input({ label, appearance = 'default', revealable = false, error
   </View>;
 }
 const styles = StyleSheet.create({
+  prefix: { marginLeft: 13, color: authColors.muted, fontFamily: authFonts.bold, fontSize: 13 },
   authContainer: { gap: 7, marginBottom: 14 },
   authLabel: { color: authColors.muted, fontFamily: authFonts.semibold, fontWeight: 'normal', fontSize: 11, marginLeft: 2 },
   authFrame: { borderColor: authColors.inputBorder, borderRadius: 12 },
