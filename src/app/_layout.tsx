@@ -20,7 +20,7 @@ function Navigation() {
       <Stack.Screen name="login" /><Stack.Screen name="signup" />
     </Stack.Protected>
     <Stack.Protected guard={!!session && !recovering}>
-      <Stack.Screen name="bills/index" /><Stack.Screen name="expenses/index" /><Stack.Screen name="expenses/create" /><Stack.Screen name="expenses/edit" /><Stack.Screen name="expenses/[id]" />
+      <Stack.Screen name="bills/index" /><Stack.Screen name="expenses/index" /><Stack.Screen name="expenses/create" options={householdSheetOptions} /><Stack.Screen name="expenses/edit" options={householdSheetOptions} /><Stack.Screen name="expenses/[id]" />
       <Stack.Screen name="notifications" options={householdSheetOptions} /><Stack.Screen name="settlements/index" options={householdSheetOptions} /><Stack.Screen name="home" /><Stack.Screen name="profile" />
       <Stack.Screen name="households/index" options={householdSheetOptions} /><Stack.Screen name="households/create" options={householdSheetOptions} /><Stack.Screen name="households/[id]" options={householdSheetOptions} />
     </Stack.Protected>
