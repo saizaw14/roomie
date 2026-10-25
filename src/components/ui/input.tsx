@@ -1,5 +1,6 @@
 import { useState, useId, type Ref } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View, type TextInputProps, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, Text, TextInput, View, type TextInputProps, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { authColors, authFonts } from '@/theme/auth-tokens';
 import { colors, radius, spacing } from '@/theme/tokens';
 type Props = TextInputProps & { label: string; prefix?: string; containerStyle?: StyleProp<ViewStyle>; appearance?: 'default' | 'auth'; revealable?: boolean; error?: string; hint?: string; ref?: Ref<TextInput> };
@@ -33,7 +34,7 @@ const styles = StyleSheet.create({
   authLabel: { color: authColors.muted, fontFamily: authFonts.semibold, fontWeight: 'normal', fontSize: 11, marginLeft: 2 },
   authFrame: { borderColor: authColors.inputBorder, borderRadius: 12 },
   authInput: { paddingHorizontal: 13, paddingVertical: 0, color: authColors.ink, fontFamily: authFonts.regular, fontSize: 16 },
-  focused: { borderColor: authColors.primary, boxShadow: '0 0 0 3px #e7f5f2' },
+  focused: { borderColor: authColors.primary, boxShadow: `0 0 0 3px ${authColors.soft}` },
   reveal: { minWidth: 52, minHeight: 50, alignItems: 'center', justifyContent: 'center' },
   revealText: { color: authColors.primary, fontFamily: authFonts.bold, fontSize: 10 },
   container: { gap: spacing.sm }, label: { color: colors.ink, fontSize: 14, fontWeight: '600' },

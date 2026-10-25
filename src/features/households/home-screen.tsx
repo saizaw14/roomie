@@ -1,9 +1,11 @@
+import { palette as appPalette } from '@/theme/palette';
 import { UpcomingBills } from '@/features/bills/upcoming-card';
 import { NotificationBell } from '@/features/notifications/notifications';
 import { Link } from 'expo-router';
 import { Image } from 'expo-image';
 import { useState } from 'react';
-import { Pressable,ScrollView,StyleSheet,Text,View } from 'react-native';
+import {ScrollView,StyleSheet,Text,View } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/components/ui/button';
 import { LoadingScreen } from '@/components/ui/loading-screen';
@@ -55,9 +57,9 @@ export function HomeScreen() {
      <Image source={require('../../../assets/images/dashboard/balance-background.svg')} style={StyleSheet.absoluteFill} contentFit="fill"/>
      <View style={s.balanceTop}><View style={s.balanceIcon}><DashboardIcon name="wallet" color="white"/></View><Text style={s.balanceLabel}>Your net balance</Text>{summary&&!balanceError&&!expenses.isPending&&!settlements.isPending?<Text style={s.badge}>{summary.net>0?'You’re ahead':summary.net<0?'Repayment due':'All settled up'}</Text>:null}</View>
      {expenses.isPending||settlements.isPending?<><Text style={[s.amount,{fontSize:25}]}>Loading…</Text><Text style={s.balanceHint}>Fetching your household balance</Text></>:expenses.isError||balanceError?<><Text style={[s.amount,{fontSize:25}]}>Unavailable</Text><Text accessibilityRole="alert" style={s.balanceHint}>{balanceError??expenseError(expenses.error)}</Text></>:summary?<><Text style={s.amount}>{summary.net<0?'−':''}{money(Math.abs(summary.net))}</Text><View style={s.balanceBreakdown}><View style={s.balancePart}><Text style={s.balancePartLabel}>You’re owed</Text><Text style={s.balancePartAmount}>{money(Math.max(summary.net,0))}</Text></View><View style={[s.balancePart,s.balancePartDivider]}><Text style={s.balancePartLabel}>You owe</Text><Text style={s.balancePartAmount}>{money(Math.max(-summary.net,0))}</Text></View></View></>:<Text style={s.balanceHint}>Your membership is unavailable. Reopen this household to try again.</Text>}
-     <View style={s.balanceActions}><Link href={{pathname:'/expenses/create',params:{household:house.id}}} asChild><Button appearance="auth" label="Add expense" leadingIcon={<DashboardIcon name="plus" color="#0b5f59"/>} style={s.primaryAction} labelStyle={s.primaryLabel}/></Link><Link href={{pathname:'/settlements',params:{household:house.id}}} asChild><Button appearance="auth" label="Settle up" leadingIcon={<DashboardIcon name="wallet" color="white"/>} variant="secondary" style={s.secondaryAction} labelStyle={s.secondaryLabel}/></Link></View>
+     <View style={s.balanceActions}><Link href={{pathname:'/expenses/create',params:{household:house.id}}} asChild><Button appearance="auth" label="Add expense" leadingIcon={<DashboardIcon name="plus" color={appPalette.primaryStrong}/>} style={s.primaryAction} labelStyle={s.primaryLabel}/></Link><Link href={{pathname:'/settlements',params:{household:house.id}}} asChild><Button appearance="auth" label="Settle up" leadingIcon={<DashboardIcon name="wallet" color="white"/>} variant="secondary" style={s.secondaryAction} labelStyle={s.secondaryLabel}/></Link></View>
     </View>
-    <View style={s.note}><DashboardIcon name="shield" color="#647084"/><Text style={[s.small,{flex:1}]}>Balances include posted expenses and confirmed repayments. Pending payments have no effect.</Text></View>
+    <View style={s.note}><DashboardIcon name="shield" color={appPalette.muted}/><Text style={[s.small,{flex:1}]}>Balances include posted expenses and confirmed repayments. Pending payments have no effect.</Text></View>
     {pending.length?<Link href={{pathname:'/settlements',params:{household:house.id,view:'history',...(pending.length===1?{payment:pending[0].id}:{})}}} asChild>
      <Pressable accessibilityRole="button" accessibilityLabel={`${pending.length} payment${pending.length===1?' needs':'s need'} your review. Review incoming repayments.`} style={reminder.card}>
       <View style={reminder.icon}><Image source={require('../../../assets/images/dashboard/clock.svg')} style={reminder.clock} contentFit="contain"/></View>
@@ -78,9 +80,9 @@ export function HomeScreen() {
   {house?<Link href={{pathname:'/expenses/create',params:{household:house.id}}} asChild><Pressable accessibilityRole="button" accessibilityLabel="Add expense" style={s.fab}><DashboardIcon name="plus" color="white"/></Pressable></Link>:null}
   <View style={s.nav}>
    <Link href="/home" asChild><Pressable accessibilityRole="button" accessibilityState={{selected:true}} style={s.navItem}><View style={s.indicator}/><DashboardIcon name="home"/><Text style={[s.navLabel,s.activeNav]}>Home</Text></Pressable></Link>
-   <Link href="/expenses" asChild><Pressable accessibilityRole="button" style={s.navItem}><DashboardIcon name="receipt" color="#8a929d"/><Text style={s.navLabel}>Expenses</Text></Pressable></Link>
-   <Link href="/bills" asChild><Pressable accessibilityRole="button" style={s.navItem}><DashboardIcon name="calendar" color="#8a929d"/><Text style={s.navLabel}>Bills</Text></Pressable></Link>
-   <Link href="/profile" asChild><Pressable accessibilityRole="button" style={s.navItem}><DashboardIcon name="user" color="#8a929d"/><Text style={s.navLabel}>Me</Text></Pressable></Link>
+   <Link href="/expenses" asChild><Pressable accessibilityRole="button" style={s.navItem}><DashboardIcon name="receipt" color={appPalette.subtleText}/><Text style={s.navLabel}>Expenses</Text></Pressable></Link>
+   <Link href="/bills" asChild><Pressable accessibilityRole="button" style={s.navItem}><DashboardIcon name="calendar" color={appPalette.subtleText}/><Text style={s.navLabel}>Bills</Text></Pressable></Link>
+   <Link href="/profile" asChild><Pressable accessibilityRole="button" style={s.navItem}><DashboardIcon name="user" color={appPalette.subtleText}/><Text style={s.navLabel}>Me</Text></Pressable></Link>
   </View>
  </SafeAreaView></View>;
 }
@@ -96,8 +98,8 @@ function ActivityRow({event,name,currency}:{event:ActivityEvent;name:string;curr
 
 // Published Figma Home pending-card; parent content supplies its 14px top spacing.
 const reminder=StyleSheet.create({
- card:{minHeight:74,padding:14,marginBottom:10,backgroundColor:'#fff5dd',borderWidth:1,borderColor:'#f4dfad',borderRadius:16,flexDirection:'row',alignItems:'center',gap:12},
- icon:{width:40,height:40,borderRadius:12,backgroundColor:'#ffe9b6',alignItems:'center',justifyContent:'center'},
+ card:{minHeight:74,padding:14,marginBottom:10,backgroundColor:appPalette.warningSoft,borderWidth:1,borderColor:appPalette.warningBorder,borderRadius:16,flexDirection:'row',alignItems:'center',gap:12},
+ icon:{width:40,height:40,borderRadius:12,backgroundColor:appPalette.warningIcon,alignItems:'center',justifyContent:'center'},
  clock:{width:20,height:20},chevron:{width:18,height:18},
  copy:{flex:1,minWidth:0},title:{fontFamily:f.bold,fontSize:13,lineHeight:18,color:c.ink},
  detail:{fontFamily:f.regular,fontSize:12,lineHeight:18,color:c.muted,marginTop:4},

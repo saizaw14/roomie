@@ -1,6 +1,7 @@
 import { useRef,useState } from 'react';
 import { useLocalSearchParams } from 'expo-router';
-import { Pressable,Text,View } from 'react-native';
+import {Text,View } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { useMutation,useQueryClient } from '@tanstack/react-query';
 import { HouseholdSheet } from '@/features/households/household-sheet';
 import { useHouseholds } from '@/features/households/use-households';

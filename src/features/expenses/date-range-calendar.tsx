@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { DashboardIcon } from '@/features/dashboard/components';
 import { authColors as c, authFonts as f } from '@/theme/auth-tokens';
 import { localToday, validDate } from './domain';

@@ -1,6 +1,8 @@
+import { pressFeedback } from '@/lib/press-feedback';
 import { Link } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -33,14 +35,14 @@ export function LoginForm() {
           <View style={[authStyles.check, remember && authStyles.checked]}>{remember ? <Text style={authStyles.checkText}>✓</Text> : null}</View>
           <Text style={authStyles.small}>Keep me signed in</Text>
         </Pressable>
-        <Link href="/forgot-password" style={authStyles.link}>Forgot password?</Link>
+        <Link href="/forgot-password" style={authStyles.link} onPress={pressFeedback}>Forgot password?</Link>
       </View>
       {error ? <Text accessibilityRole="alert" style={authStyles.error}>{error}</Text> : null}
       <Button appearance="auth" label="Sign in" loading={isSubmitting} disabled={!configured} onPress={() => void submit()} />
       <GoogleSignInPlaceholder />
     </View>
     <View style={authStyles.switch}><Text style={authStyles.small}>New to Roomie?</Text>
-      <Link href="/signup" style={authStyles.link}>Create account</Link>
+      <Link href="/signup" style={authStyles.link} onPress={pressFeedback}>Create account</Link>
     </View>
   </DesignAuthScreen>;
 }

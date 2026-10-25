@@ -1,6 +1,8 @@
+import { palette as appPalette } from '@/theme/palette';
 import { useState } from 'react';
 import { Link } from 'expo-router';
-import { Pressable,ScrollView,Text,View } from 'react-native';
+import {ScrollView,Text,View } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LoadingScreen } from '@/components/ui/loading-screen';
 import { Button } from '@/components/ui/button';
@@ -28,7 +30,7 @@ export function BillsDashboard(){
   <View style={d.header}><Link href="/households" asChild><Pressable accessibilityRole="button" accessibilityLabel="Switch household" style={d.houseSwitch}><View style={d.houseIcon}><DashboardIcon name="building"/></View><View style={{flex:1}}><Text style={d.small}>Household</Text><Text numberOfLines={1} style={d.bold}>{house?.name??(houses.isPending?'Loading household…':'No household yet')}</Text></View><DashboardIcon name="chevron"/></Pressable></Link><NotificationBell/></View>
   <ScrollView contentContainerStyle={s.content}>
    <View style={s.heading}><View><Text style={s.eyebrow}>Recurring bills</Text><Text accessibilityRole="header" style={s.title}>Stay ahead</Text></View>{house&&owner?<Button appearance="auth" label="Add bill" style={s.add} leadingIcon={<DashboardIcon name="plus" color="white"/>} disabled={!members.isSuccess||!bills.isSuccess} onPress={()=>setSheet({house:house.id,bill:null})}/>:null}</View>
-   <View style={s.info}><DashboardIcon name="bell" color="#2964a3"/><Text style={s.infoText}>Reminders have no balance effect until you review and post them.</Text></View>
+   <View style={s.info}><DashboardIcon name="bell" color={appPalette.info}/><Text style={s.infoText}>Reminders have no balance effect until you review and post them.</Text></View>
    {houses.isPending?<Text style={s.small}>Loading your household…</Text>:houses.isError?<><Text style={s.error}>{householdError(houses.error)}</Text><Button appearance="auth" label="Retry households" onPress={()=>void houses.refetch()}/></>:!house?<HouseholdEmptyState/>:null}
    {house?<>
     {bills.isPending?<Text style={[s.small,{marginTop:24}]}>Loading recurring bills…</Text>:null}
@@ -38,7 +40,7 @@ export function BillsDashboard(){
     {!owner?<Text style={[s.note,{marginTop:18}]}>The household owner manages recurring bills. Any active member can review and post a paid occurrence.</Text>:null}
    </>:null}
   </ScrollView>
-  <View style={d.nav}>{([{label:'Home',href:'/home',icon:'home'},{label:'Expenses',href:'/expenses',icon:'receipt'},{label:'Bills',href:'/bills',icon:'calendar'},{label:'Me',href:'/profile',icon:'user'}] as const).map(item=><Link key={item.label} href={item.href} asChild><Pressable accessibilityRole="button" accessibilityState={{selected:item.label==='Bills'}} style={d.navItem}>{item.label==='Bills'?<View style={d.indicator}/>:null}<DashboardIcon name={item.icon} color={item.label==='Bills'?'#0f766e':'#8a929d'}/><Text style={[d.navLabel,item.label==='Bills'&&d.activeNav]}>{item.label}</Text></Pressable></Link>)}</View>
+  <View style={d.nav}>{([{label:'Home',href:'/home',icon:'home'},{label:'Expenses',href:'/expenses',icon:'receipt'},{label:'Bills',href:'/bills',icon:'calendar'},{label:'Me',href:'/profile',icon:'user'}] as const).map(item=><Link key={item.label} href={item.href} asChild><Pressable accessibilityRole="button" accessibilityState={{selected:item.label==='Bills'}} style={d.navItem}>{item.label==='Bills'?<View style={d.indicator}/>:null}<DashboardIcon name={item.icon} color={item.label==='Bills'?appPalette.primary:appPalette.subtleText}/><Text style={[d.navLabel,item.label==='Bills'&&d.activeNav]}>{item.label}</Text></Pressable></Link>)}</View>
   {sheet&&house&&sheet.house===house.id&&members.data?<BillSheet key={sheet.bill?.id??'new'} house={house} members={members.data} owner={owner} bill={sheet.bill} onClose={()=>setSheet(null)}/>:null}
  </SafeAreaView></View>;
 }
@@ -47,7 +49,7 @@ function BillCard({bill,today,currency,payer,ownMember,disabled,onPress}:{bill:B
  const index=ownMember?bill.participants.indexOf(ownMember):-1;
  const share=bill.amount_minor===null?null:index<0?0:Math.floor(bill.amount_minor/bill.participants.length)+(index<bill.amount_minor%bill.participants.length?1:0);
  return <Pressable accessibilityRole="button" accessibilityLabel={`${bill.title}, ${bill.active?dueLabel(bill.next_due_date,today):'paused'}. Open bill details.`} disabled={disabled} onPress={onPress} style={({pressed})=>[s.card,overdue&&s.overdue,!bill.active&&s.paused,pressed&&{opacity:0.8}]}>
-  <View style={s.head}><View style={[s.icon,bill.category==='Utilities'&&s.electric,!bill.active&&s.gray]}><Icon name={!bill.active?'receipt':bill.category==='Utilities'?'bolt':bill.category==='Rent'?'building':'receipt'} color={!bill.active?'#6d7581':bill.category==='Utilities'?'#a76513':'#0f766e'}/></View><Text style={[s.badge,overdue&&s.errorBadge,!bill.active&&s.neutralBadge]}>{bill.active?dueLabel(bill.next_due_date,today):'Paused'}</Text></View>
+  <View style={s.head}><View style={[s.icon,bill.category==='Utilities'&&s.electric,!bill.active&&s.gray]}><Icon name={!bill.active?'receipt':bill.category==='Utilities'?'bolt':bill.category==='Rent'?'building':'receipt'} color={!bill.active?appPalette.subtleText:bill.category==='Utilities'?appPalette.warning:appPalette.primary}/></View><Text style={[s.badge,overdue&&s.errorBadge,!bill.active&&s.neutralBadge]}>{bill.active?dueLabel(bill.next_due_date,today):'Paused'}</Text></View>
   <Text style={s.name}>{bill.title}</Text><Text style={s.detail}>{!bill.active?'No future reminders':variable?`Variable amount · ${bill.frequency==='monthly'?'Monthly':'Weekly'}`:`Fixed · Paid by ${payer} · ${bill.participants.length} people`}</Text>
   {bill.active?<><Text style={s.amount}>{variable?'Amount to be entered':money(bill.amount_minor!,currency)}</Text>{attention?<View style={s.secondary}><Text style={s.secondaryText}>Review & post expense</Text></View>:share!==null?<View style={s.split}><Text style={s.small}>Your share</Text><Text style={s.bold}>{money(share,currency)}</Text></View>:null}</>:null}
  </Pressable>;

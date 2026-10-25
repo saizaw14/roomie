@@ -1,3 +1,4 @@
+import { palette as appPalette } from '@/theme/palette';
 import { Link } from 'expo-router';
 import { Image } from 'expo-image';
 import { useState } from 'react';
@@ -31,7 +32,7 @@ export function WelcomeScreen() {
      <Image source={require('../../../assets/images/welcome/balance.svg')} style={StyleSheet.absoluteFill} contentFit="fill"/>
      <View style={[s.arrowBox,{width:38*scale,height:38*scale}]}><Image source={require('../../../assets/images/welcome/arrow.svg')} style={{width:24,height:24}}/></View>
      <Text style={[s.owed,{marginTop:20*scale}]}>You are owed</Text><Text style={[s.amount,{fontSize:29*scale}]}>RM300.00</Text>
-     <View style={[s.avatars,{marginTop:24*scale}]}>{[['BT','#eaf3fb','#2964a3'],['CK','#fff1d5','#a76513'],['DL','#f0eafa','#7442bc']].map(([initials,bg,color])=><View key={initials} style={[s.avatar,{backgroundColor:bg,width:29*scale,height:29*scale,marginRight:-3*scale}]}><Text style={[s.initials,{color,fontSize:8*scale}]}>{initials}</Text></View>)}</View>
+     <View style={[s.avatars,{marginTop:24*scale}]}>{[['BT',appPalette.infoSoft,appPalette.info],['CK',appPalette.warningSoft,appPalette.warning],['DL',appPalette.lavenderSoft,appPalette.lavender]].map(([initials,bg,color])=><View key={initials} style={[s.avatar,{backgroundColor:bg,width:29*scale,height:29*scale,marginRight:-3*scale}]}><Text style={[s.initials,{color,fontSize:8*scale}]}>{initials}</Text></View>)}</View>
     </View>
     <View style={[s.floating,s.paid,{left:20*scale,top:32*scale,padding:11*scale,gap:10*scale}]}>
      <View style={[s.avatar,{width:37*scale,height:37*scale,backgroundColor:c.soft}]}><Text style={s.alex}>AZ</Text></View>
@@ -39,7 +40,7 @@ export function WelcomeScreen() {
      <Image source={require('../../../assets/images/expenses/check.svg')} style={{width:20,height:20,marginLeft:4}}/>
     </View>
     <View style={[s.floating,s.bill,{right:17*scale,bottom:32*scale,padding:11*scale,gap:9*scale}]}>
-     <View style={[s.boltBox,{width:37*scale,height:37*scale}]}><Image source={require('../../../assets/images/expenses/bolt.svg')} style={{width:20,height:20}} tintColor="#a76513"/></View>
+     <View style={[s.boltBox,{width:37*scale,height:37*scale}]}><Image source={require('../../../assets/images/expenses/bolt.svg')} style={{width:20,height:20}} tintColor={appPalette.warning}/></View>
      <View><Text style={s.cardAmount}>Electricity</Text><Text style={s.caption}>Due in 3 days</Text></View>
     </View>
    </View>:null}
@@ -56,9 +57,9 @@ export function WelcomeScreen() {
  </SafeAreaView></View>;
 }
 const s=StyleSheet.create({
- canvas:{flex:1,backgroundColor:'#dfe5e8'},safe:{flex:1,width:'100%',maxWidth:430,alignSelf:'center',backgroundColor:'white'},screen:{flex:1,minHeight:0},art:{overflow:'hidden',backgroundColor:'#edf8f6'},
- balance:{position:'absolute',borderRadius:26,overflow:'hidden',boxShadow:'0 18px 40px rgba(15,118,110,0.25)'},arrowBox:{borderRadius:12,backgroundColor:'rgba(255,255,255,0.17)',alignItems:'center',justifyContent:'center'},owed:{fontFamily:f.regular,color:'rgba(255,255,255,0.72)',fontSize:10},amount:{fontFamily:f.bold,color:'white',letterSpacing:-0.8,marginTop:10},avatars:{flexDirection:'row'},avatar:{borderRadius:999,alignItems:'center',justifyContent:'center'},initials:{fontFamily:f.bold},
- floating:{position:'absolute',flexDirection:'row',alignItems:'center',borderRadius:17,backgroundColor:'rgba(255,255,255,0.96)',minHeight:65,boxShadow:'0 12px 28px rgba(32,65,65,0.12)'},paid:{},bill:{},alex:{fontFamily:f.extra,fontSize:12,color:c.primary},caption:{fontFamily:f.regular,fontSize:8,lineHeight:14,color:c.muted},cardAmount:{fontFamily:f.bold,fontSize:10,lineHeight:17,color:c.ink},boltBox:{backgroundColor:'#fff1d5',borderRadius:13,justifyContent:'center',alignItems:'center'},
+ canvas:{flex:1,backgroundColor:appPalette.canvas},safe:{flex:1,width:'100%',maxWidth:430,alignSelf:'center',backgroundColor:'white'},screen:{flex:1,minHeight:0},art:{overflow:'hidden',backgroundColor:appPalette.heroEnd},
+ balance:{position:'absolute',borderRadius:26,overflow:'hidden',boxShadow:'0 18px 40px rgba(40,95,82,0.25)'},arrowBox:{borderRadius:12,backgroundColor:'rgba(255,255,255,0.17)',alignItems:'center',justifyContent:'center'},owed:{fontFamily:f.regular,color:'rgba(255,255,255,0.72)',fontSize:10},amount:{fontFamily:f.bold,color:'white',letterSpacing:-0.8,marginTop:10},avatars:{flexDirection:'row'},avatar:{borderRadius:999,alignItems:'center',justifyContent:'center'},initials:{fontFamily:f.bold},
+ floating:{position:'absolute',flexDirection:'row',alignItems:'center',borderRadius:17,backgroundColor:'rgba(255,255,255,0.96)',minHeight:65,boxShadow:'0 12px 28px rgba(32,65,65,0.12)'},paid:{},bill:{},alex:{fontFamily:f.extra,fontSize:12,color:c.primary},caption:{fontFamily:f.regular,fontSize:8,lineHeight:14,color:c.muted},cardAmount:{fontFamily:f.bold,fontSize:10,lineHeight:17,color:c.ink},boltBox:{backgroundColor:appPalette.warningSoft,borderRadius:13,justifyContent:'center',alignItems:'center'},
  compactCopy:{paddingTop:16,paddingBottom:16},compactHeadline:{lineHeight:31,marginTop:14,marginBottom:10},compactActions:{marginTop:18},
- copy:{flex:1,paddingHorizontal:25,paddingTop:28,paddingBottom:40,backgroundColor:'white'},brandRow:{flexDirection:'row',alignItems:'center',gap:10},mark:{width:42,height:42,borderRadius:14,backgroundColor:c.primary,justifyContent:'center',alignItems:'center',boxShadow:'0 6px 14px rgba(15,118,110,0.18)'},brand:{fontFamily:f.bold,fontSize:23,letterSpacing:-0.6,color:c.ink},headline:{fontFamily:f.regular,color:c.ink,lineHeight:37,letterSpacing:-1.2,marginTop:24,marginBottom:14},teal:{color:c.primary},description:{fontFamily:f.regular,fontSize:13,lineHeight:21,color:c.muted},actions:{gap:9,marginTop:32},action:{minHeight:54,borderRadius:14},actionLabel:{fontFamily:f.bold,fontSize:14},secondary:{backgroundColor:'white',borderWidth:1,borderColor:'#b8d7d3'},
+ copy:{flex:1,paddingHorizontal:25,paddingTop:28,paddingBottom:40,backgroundColor:'white'},brandRow:{flexDirection:'row',alignItems:'center',gap:10},mark:{width:42,height:42,borderRadius:14,backgroundColor:c.primary,justifyContent:'center',alignItems:'center',boxShadow:'0 6px 14px rgba(40,95,82,0.18)'},brand:{fontFamily:f.bold,fontSize:23,letterSpacing:-0.6,color:c.ink},headline:{fontFamily:f.regular,color:c.ink,lineHeight:37,letterSpacing:-1.2,marginTop:24,marginBottom:14},teal:{color:c.primary},description:{fontFamily:f.regular,fontSize:13,lineHeight:21,color:c.muted},actions:{gap:9,marginTop:32},action:{minHeight:54,borderRadius:14},actionLabel:{fontFamily:f.bold,fontSize:14},secondary:{backgroundColor:'white',borderWidth:1,borderColor:appPalette.selectedBorder},
 });

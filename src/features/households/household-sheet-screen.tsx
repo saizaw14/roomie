@@ -1,7 +1,9 @@
+import { palette as appPalette } from '@/theme/palette';
 import { useEffect,useRef,useState } from 'react';
 import { router } from 'expo-router';
 import { Image } from 'expo-image';
-import { Pressable,StyleSheet,Text,View } from 'react-native';
+import {StyleSheet,Text,View } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { useMutation,useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -57,7 +59,7 @@ function CreateForm({onBack}:{onBack:()=>void}) {
  return <HouseholdSheet title="Create household" subtitle="You’ll become the household owner" busy={mutation.isPending} onBack={onBack}>
   <FormInput appearance="auth" control={form.control} name="name" label="Household name" placeholder="e.g. Sunway Apartment" maxLength={80} autoCapitalize="words" editable={!mutation.isPending} returnKeyType="done" onSubmitEditing={()=>{if(!mutation.isPending)void submit();}}/>
   <CurrencySelector value={currency} onChange={value=>{setCurrency(value);setError(null);}} disabled={mutation.isPending}/>
-  <View style={s.info}><Image source={require('../../../assets/images/dashboard/shield.svg')} style={{width:20,height:20}} tintColor="#2964a3"/><Text style={s.infoText}>Owners manage invitations and household-wide settings.</Text></View>
+  <View style={s.info}><Image source={require('../../../assets/images/dashboard/shield.svg')} style={{width:20,height:20}} tintColor={appPalette.info}/><Text style={s.infoText}>Owners manage invitations and household-wide settings.</Text></View>
   {error?<Text accessibilityRole="alert" style={s.error}>{error}</Text>:null}
   <Button appearance="auth" label="Create household" disabled={!currency} loading={mutation.isPending} onPress={()=>void submit()}/>
  </HouseholdSheet>;
@@ -81,7 +83,7 @@ function JoinForm({initialCode,onBack}:{initialCode:string;onBack?:()=>void}) {
  }catch(failure){if(active.current)setError(householdError(failure));}finally{lock.current=false;}}
  return <HouseholdSheet title="Join household" subtitle="Enter an invitation from an owner" busy={mutation.isPending} onBack={onBack}>
   <Input appearance="auth" label="Invitation code or link" placeholder="Paste the full code or invitation link" value={code} onChangeText={setCode} autoCapitalize="none" autoCorrect={false} editable={!mutation.isPending} returnKeyType="go" onSubmitEditing={()=>void submit()}/>
-  <View style={s.info}><Image source={require('../../../assets/images/dashboard/building.svg')} style={{width:20,height:20}} tintColor="#2964a3"/><Text style={s.infoText}>Enter the full 32-character code or link shared by your household owner. Joining adds your account to that household.</Text></View>
+  <View style={s.info}><Image source={require('../../../assets/images/dashboard/building.svg')} style={{width:20,height:20}} tintColor={appPalette.info}/><Text style={s.infoText}>Enter the full 32-character code or link shared by your household owner. Joining adds your account to that household.</Text></View>
   {!canJoin?<Text style={s.text}>Sign in to continue. Your invitation stays available during this app session; reopen its link after a reload.</Text>:null}
   {error?<Text accessibilityRole="alert" style={s.error}>{error}</Text>:null}
   <Button appearance="auth" label={canJoin?'Join household':recovering?'Finish password recovery':'Sign in to join'} loading={mutation.isPending} onPress={()=>void submit()}/>

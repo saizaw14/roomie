@@ -1,5 +1,6 @@
 import { Link } from 'expo-router';
-import { Pressable,Text,View } from 'react-native';
+import {Text,View } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { Button } from '@/components/ui/button';
 import { DashboardCard,DashboardIcon,styles as s } from '@/features/dashboard/components';
 import { localToday,money } from '@/features/expenses/domain';
