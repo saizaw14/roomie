@@ -189,3 +189,11 @@ Added token-level contrast regression checks: primary white text 7.37:1, ink on 
 Installed SDK-compatible `expo-haptics ~57.0.3`. Added a shared Pressable wrapper and non-blocking feedback helper: light iOS/web impact and Android Virtual_Key feedback. Migrated app press targets (buttons, navigation, selectors, calendar days, cards, reveal/close controls) to the wrapper; text-only links receive feedback directly. Link-asChild targets use their child feedback once. Disabled/loading buttons and canceled touches do not trigger tap feedback; missing hardware/browser support or rejected haptics cannot block the action. Existing refs, styles and navigation handlers are forwarded.
 
 Lint/typecheck and all 71 tests pass; iOS, Android and web export pass. Physical vibration remains unverified without device testing. Expo Go includes the module; existing custom development/release builds need rebuilding to include it. Browser vibration depends on hardware and browser support, and system settings can suppress native haptics. No SQL changes.
+
+## Separate profile household sheets — 2026-10-25
+
+Profile Members and Household settings now open distinct protected bottom-sheet routes, each without the old Members/Settings switcher. Members contains active/past members and an owner-only expandable invitation manager; Settings contains household name, fixed currency and ownership details. Invitations no longer send users to settings. Preserved existing RPC permissions, busy dismissal guards, current palette, haptic controls and legacy household links. No SQL changes.
+
+## Remove manual repayment entry — 2026-10-25
+
+Removed Record manually from Settle Up, its form/state, and the Record a payment without QR fallback. The QR receipt submission and recipient review/confirmation flows remain available, including existing repayment history. Kept backend settlement functions because QR recording depends on them. No migration needed. Lint/typecheck pass.

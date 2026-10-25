@@ -15,7 +15,7 @@ Expo-compatible `expo-file-system` and `expo-media-library` are installed. Both 
 5. They return and choose a PNG/JPEG receipt up to 5 MB. A receipt is required for this QR submission path. They tap Send receipt for confirmation.
 6. The repayment remains pending. The recipient opens its details, reviews the receipt and confirms actual receipt of money, or rejects it. The existing recipient-only exactly-once rules apply. Receipt upload alone has no balance effect.
 
-Existing manual repayment recording remains available for non-QR transfers. If a QR is unavailable, the user may retry or use that manual flow. Suggestions larger than the record limit are capped at 1,000,000,000 minor units per QR submission, with the actual amount shown before payment.
+Settle Up uses the QR-and-receipt flow. If a QR is unavailable, retry or ask the recipient to upload their payment QR. Manual repayment entry is no longer exposed in the app. Suggestions larger than the record limit are capped at 1,000,000,000 minor units per QR submission, with the actual amount shown before payment.
 
 ## Access and retention
 
