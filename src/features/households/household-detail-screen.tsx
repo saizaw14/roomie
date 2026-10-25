@@ -2,7 +2,6 @@ import { palette as appPalette } from '@/theme/palette';
 import { useEffect, useState } from 'react';
 import { Link, useLocalSearchParams } from 'expo-router';
 import { Platform, Share, Text, View, StyleSheet } from 'react-native';
-import { Pressable } from '@/components/ui/pressable';
 import { useIsMutating, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
@@ -98,15 +97,16 @@ function Invitations({ id, user }: { id: string; user: string }) {
   }} />)}
  </>;
 }
-export function HouseholdDetailScreen() {
+export function HouseholdDetailScreen({section}:{section?:'members'|'settings'} = {}) {
  const { id: param, view } = useLocalSearchParams<{ id?: string | string[]; view?: string }>();
  const id = typeof param === 'string' && z.string().uuid().safeParse(param).success ? param : '';
  const { session } = useAuth(); const user = session?.user.id ?? '';
  const houses = useHouseholds();
  const household = houses.houses.find(h => h.id === id);
  const owner = houses.data?.memberships.some(m => m.household_id === id && m.user_id === user && m.role === 'owner' && m.status==='active');
- const [tab,setTab]=useState<'members'|'settings'>(view==='settings'?'settings':'members');
- const members = useQuery({ queryKey: ['household-members', user, id], queryFn: () => listMembers(id), enabled: !!household && !!user });
+ const tab=section??(view==='settings'?'settings':'members');
+ const [showInvitations,setShowInvitations]=useState(false);
+ const members = useQuery({ queryKey: ['household-members', user, id], queryFn: () => listMembers(id), enabled: tab==='members' && !!household && !!user });
  const busy=useIsMutating({mutationKey:['household-settings',id]})>0;
  const active=members.data?.filter(m=>m.status==='active')??[];
  const ended=members.data?.filter(m=>m.status!=='active')??[];
@@ -116,22 +116,22 @@ export function HouseholdDetailScreen() {
   <Link href="/households" asChild><Button appearance="auth" label="Your households" /></Link>
  </HouseholdSheet>;
  return <HouseholdSheet busy={busy} title={tab==='members'?'Household members':'Household settings'} subtitle={tab==='members'?`${household?.name??'Loading household…'}${members.isSuccess?` · ${active.length} active`:''}`:owner?'Owner controls':'Your household details'}>
-  <View style={styles.tabs}>{(['members','settings'] as const).map(value=><Pressable key={value} disabled={busy} accessibilityRole="tab" accessibilityState={{selected:tab===value,disabled:busy}} onPress={()=>setTab(value)} style={[styles.tab,tab===value&&styles.selected]}><Text style={[styles.tabLabel,tab===value&&{color:c.primary}]}>{value==='members'?'Members':'Settings'}</Text></Pressable>)}</View>
   {household ? tab==='members'?<>
     {members.isPending ? <Text style={styles.body}>Loading members…</Text> : null}
     {members.isError ? <><Text accessibilityRole="alert" style={styles.error}>{householdError(members.error)}</Text><Button appearance="auth" label="Retry members" loading={members.isFetching} onPress={() => void members.refetch()} /></> : null}
     {active.length?<View style={styles.members}>{active.map((m,index)=><View key={m.id} style={[styles.member,index>0&&styles.divider]}><View style={[styles.avatar,{backgroundColor:tones[index%tones.length][0]}]}><Text style={[styles.initials,{color:tones[index%tones.length][1]}]}>{m.display_name.trim().split(/\s+/).slice(0,2).map(part=>part[0]).join('').toUpperCase()}</Text></View><View style={{flex:1,gap:4}}><Text style={styles.memberName}>{m.display_name}{m.user_id===user?' (you)':''}</Text><Text style={styles.small}>{m.role==='owner'?'Owner':'Member'}</Text></View>{m.role==='owner'?<Text style={styles.badge}>Owner</Text>:null}</View>)}</View>:null}
     {members.isSuccess&&!active.length?<Text style={styles.body}>No active members found. Refresh to check your membership.</Text>:null}
-    {owner?<Button appearance="auth" label="Invite a member" leadingIcon={<DashboardIcon name="plus" color="white"/>} onPress={()=>setTab('settings')}/>:<Text style={styles.body}>Your household owner manages invitations.</Text>}
+    {owner?(!showInvitations?<Button appearance="auth" label="Invite a member" disabled={busy} leadingIcon={<DashboardIcon name="plus" color="white"/>} onPress={()=>setShowInvitations(true)}/>:null):<Text style={styles.body}>Your household owner manages invitations.</Text>}
+    {owner&&showInvitations?<Invitations key={`invites-${id}`} id={id} user={user}/>:null}
     {ended.length?<><Text style={styles.title}>Past members</Text><Card style={styles.form}>{ended.map(m=><Text key={m.id} style={styles.small}>{m.display_name} · Membership ended</Text>)}</Card></>:null}
     <Button appearance="auth" label="Refresh members" variant="secondary" loading={members.isFetching} onPress={()=>void members.refetch()}/>
   </>:<>
-   {owner?<><Settings key={id} id={id} name={household.name} currency={household.currency}/><Invitations key={`invites-${id}`} id={id} user={user}/></>:<Card style={styles.form}><Input appearance="auth" label="Household name" value={household.name} editable={false}/><Input appearance="auth" label="Currency" value={`${household.currency} · ${currencies.find(item=>item.code===household.currency)?.name??household.currency}`} editable={false}/><Text style={styles.body}>Your household owner manages invitations and settings.</Text></Card>}
+   {owner?<Settings key={id} id={id} name={household.name} currency={household.currency}/>:<Card style={styles.form}><Input appearance="auth" label="Household name" value={household.name} editable={false}/><Input appearance="auth" label="Currency" value={`${household.currency} · ${currencies.find(item=>item.code===household.currency)?.name??household.currency}`} editable={false}/><Text style={styles.body}>Only the household owner can change these settings.</Text></Card>}
    <Text style={styles.title}>Ownership</Text><View style={styles.policy}><DashboardIcon name="shield"/><View style={{flex:1,gap:5}}><Text style={styles.bold}>{owner?'You are the owner':'You are a member'}</Text><Text style={styles.small}>Leaving, member removal, and ownership transfer will be available with safeguards for household balances and history.</Text></View></View>
   </>:<Text style={styles.body}>Loading household…</Text>}
  </HouseholdSheet>;
 }
 const tones=[[appPalette.primarySoft,appPalette.primary],[appPalette.infoSoft,appPalette.info],[appPalette.warningSoft,appPalette.warning],[appPalette.lavenderSoft,appPalette.lavender]];
 const styles=StyleSheet.create({
- form:{padding:14,borderRadius:15,borderColor:c.line,gap:14}, title:{fontFamily:f.bold,color:c.ink,fontSize:17,letterSpacing:-0.3}, body:sheetStyles.text,error:sheetStyles.error,success:{...sheetStyles.text,color:c.primary},small:{fontFamily:f.regular,fontSize:10,lineHeight:16,color:c.muted},bold:{fontFamily:f.semibold,fontSize:12,color:c.ink},code:{fontFamily:f.bold,fontSize:14,letterSpacing:0.5,color:c.ink},tabs:{flexDirection:'row',padding:4,borderRadius:12,backgroundColor:appPalette.neutralRaised},tab:{flex:1,minHeight:40,alignItems:'center',justifyContent:'center',borderRadius:9},selected:{backgroundColor:'white'},tabLabel:{fontFamily:f.semibold,fontSize:12,color:c.muted},members:{backgroundColor:'white',borderWidth:1,borderColor:c.line,borderRadius:16,overflow:'hidden'},member:{minHeight:65,paddingVertical:9,paddingHorizontal:12,flexDirection:'row',alignItems:'center',gap:11},divider:{borderTopWidth:1,borderColor:c.line},avatar:{width:38,height:38,borderRadius:19,alignItems:'center',justifyContent:'center'},initials:{fontFamily:f.extra,fontSize:11},memberName:{fontFamily:f.bold,fontSize:11,color:c.ink},badge:{fontFamily:f.bold,fontSize:9,lineHeight:22,paddingHorizontal:8,borderRadius:10,backgroundColor:appPalette.infoSoft,color:appPalette.info},policy:{flexDirection:'row',gap:11,padding:15,borderWidth:1,borderStyle:'dashed',borderColor:appPalette.handle,borderRadius:15,marginBottom:14},
+ form:{padding:14,borderRadius:15,borderColor:c.line,gap:14}, title:{fontFamily:f.bold,color:c.ink,fontSize:17,letterSpacing:-0.3}, body:sheetStyles.text,error:sheetStyles.error,success:{...sheetStyles.text,color:c.primary},small:{fontFamily:f.regular,fontSize:10,lineHeight:16,color:c.muted},bold:{fontFamily:f.semibold,fontSize:12,color:c.ink},code:{fontFamily:f.bold,fontSize:14,letterSpacing:0.5,color:c.ink},members:{backgroundColor:'white',borderWidth:1,borderColor:c.line,borderRadius:16,overflow:'hidden'},member:{minHeight:65,paddingVertical:9,paddingHorizontal:12,flexDirection:'row',alignItems:'center',gap:11},divider:{borderTopWidth:1,borderColor:c.line},avatar:{width:38,height:38,borderRadius:19,alignItems:'center',justifyContent:'center'},initials:{fontFamily:f.extra,fontSize:11},memberName:{fontFamily:f.bold,fontSize:11,color:c.ink},badge:{fontFamily:f.bold,fontSize:9,lineHeight:22,paddingHorizontal:8,borderRadius:10,backgroundColor:appPalette.infoSoft,color:appPalette.info},policy:{flexDirection:'row',gap:11,padding:15,borderWidth:1,borderStyle:'dashed',borderColor:appPalette.handle,borderRadius:15,marginBottom:14},
 });
