@@ -1,3 +1,4 @@
+import { pressFeedback } from '@/lib/press-feedback';
 import { Image } from 'expo-image';
 import { Link } from 'expo-router';
 import { useState } from 'react';
@@ -48,7 +49,7 @@ export function SignupForm() {
       <Button appearance="auth" label="Create account" loading={isSubmitting} disabled={!configured} onPress={() => void submit()} />
       <GoogleSignInPlaceholder />
     </View>}
-    <View style={authStyles.switch}><Text style={authStyles.small}>Already have an account?</Text><Link href="/login" style={authStyles.link}>Sign in</Link></View>
+    <View style={authStyles.switch}><Text style={authStyles.small}>Already have an account?</Text><Link href="/login" style={authStyles.link} onPress={pressFeedback}>Sign in</Link></View>
     {!sent ? <Text style={authStyles.legal}>By creating an account, you agree to Roomie’s Terms and Privacy Policy.</Text> : null}
   </DesignAuthScreen>;
 }

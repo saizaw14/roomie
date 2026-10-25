@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import { View, ActivityIndicator, Pressable, StyleSheet, Text, type StyleProp, type TextStyle, type PressableProps } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, Text, type StyleProp, type TextStyle, type PressableProps } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { authColors, authFonts } from '@/theme/auth-tokens';
 import { colors, radius } from '@/theme/tokens';
 

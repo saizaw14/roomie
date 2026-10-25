@@ -1,6 +1,8 @@
+import { palette as appPalette } from '@/theme/palette';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { Link, router } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { z } from 'zod';
 import { useAuth } from '@/lib/auth-context';
 import { requireSupabase } from '@/lib/supabase';
@@ -113,7 +115,7 @@ function NotificationRow({ notification: n, divider, disabled, onPress }: {
   return <Pressable accessibilityRole="button" accessibilityLabel={`${title}. ${detail}. ${n.household_name}.${!n.read_at ? ' Unread.' : ''}`} disabled={disabled}
     style={({ pressed }) => [styles.row, divider && styles.divider, pressed && styles.pressed]} onPress={onPress}>
     <View style={[styles.paymentIcon, !pending && styles.resolvedIcon]}>
-      <DashboardIcon name="wallet" color={pending ? '#a76506' : c.primary}/>
+      <DashboardIcon name="wallet" color={pending ? appPalette.warning : c.primary}/>
     </View>
     <View style={styles.rowContent}>
       <Text style={styles.title}>{title}</Text>
@@ -123,17 +125,17 @@ function NotificationRow({ notification: n, divider, disabled, onPress }: {
   </Pressable>;
 }
 const styles = StyleSheet.create({
-  bellDot: { position: 'absolute', top: 8, right: 8, width: 8, height: 8, borderRadius: 4, backgroundColor: '#e85d4a', boxShadow: '0 0 0 2px #ffffff' },
+  bellDot: { position: 'absolute', top: 8, right: 8, width: 8, height: 8, borderRadius: 4, backgroundColor: appPalette.notification, boxShadow: '0 0 0 2px #ffffff' },
   row: { minHeight: 76, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', gap: 12 },
   divider: { borderTopWidth: 1, borderTopColor: c.line },
   pressed: { opacity: 0.65 },
-  paymentIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#ffe9b6', alignItems: 'center', justifyContent: 'center' },
+  paymentIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: appPalette.warningIcon, alignItems: 'center', justifyContent: 'center' },
   resolvedIcon: { backgroundColor: c.soft },
   rowContent: { flex: 1, minWidth: 0 },
   title: { fontFamily: f.bold, fontSize: 12, lineHeight: 17, color: c.ink },
   detail: { fontFamily: f.regular, fontSize: 10, lineHeight: 15, color: c.muted, marginVertical: 4 },
-  date: { fontFamily: f.regular, fontSize: 9, lineHeight: 14, color: '#9aa2ad' },
-  secondary: { backgroundColor: c.white, borderWidth: 1, borderColor: '#b8d7d3', width: '100%' },
+  date: { fontFamily: f.regular, fontSize: 9, lineHeight: 14, color: appPalette.subtleText },
+  secondary: { backgroundColor: c.white, borderWidth: 1, borderColor: appPalette.selectedBorder, width: '100%' },
   secondaryLabel: { color: c.primary },
   state: { gap: 14 },
   message: { fontFamily: f.regular, fontSize: 12, lineHeight: 19, color: c.muted },

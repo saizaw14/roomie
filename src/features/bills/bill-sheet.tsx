@@ -1,6 +1,8 @@
+import { palette as appPalette } from '@/theme/palette';
 import { useState } from 'react';
 import { Link } from 'expo-router';
-import { Modal,Pressable,Text,View } from 'react-native';
+import { Modal,Text,View } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { useMutation,useQueryClient } from '@tanstack/react-query';
 import { requireSupabase } from '@/lib/supabase';
 import { HouseholdSheet } from '@/features/households/household-sheet';
@@ -39,12 +41,12 @@ export function BillSheet({bill,house,members,owner,onClose}:{bill:Bill|null;hou
  const dateLabel=(value:string)=>new Date(value+'T12:00:00').toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'});
  let preview:number|null=null;try{preview=parseMinor(amount,false,house.currency);}catch{}
  return <Modal transparent animationType="fade" onRequestClose={()=>{if(!busy)onClose();}}><HouseholdSheet title={result?(bill?'Expense posted':'Bill created'):bill?'Review bill occurrence':'Add recurring bill'} subtitle={bill?`${bill.title} · Due ${dateLabel(bill.next_due_date)}`:'Set up a household reminder'} busy={busy} onClose={onClose}>
-  {result?<View style={s.success}><View style={s.successIcon}><Icon name="check" color="#176b50"/></View><Text style={s.name}>{bill?`${bill.title} posted`:`${title.trim()} created`}</Text><Text style={s.small}>{bill?'This occurrence is linked to an expense and cannot be posted twice.':`The first reminder is due ${dateLabel(due)}. It won’t affect balances until someone reviews and posts it.`}</Text>{result.expense?<Link href={{pathname:'/expenses/[id]',params:{id:result.expense}}} asChild><Button appearance="auth" label="View expense"/></Link>:null}<Button appearance="auth" variant="secondary" style={s.secondary} labelStyle={s.secondaryText} label={bill?'Done':'View bills'} onPress={onClose}/></View>:<>
+  {result?<View style={s.success}><View style={s.successIcon}><Icon name="check" color={appPalette.success}/></View><Text style={s.name}>{bill?`${bill.title} posted`:`${title.trim()} created`}</Text><Text style={s.small}>{bill?'This occurrence is linked to an expense and cannot be posted twice.':`The first reminder is due ${dateLabel(due)}. It won’t affect balances until someone reviews and posts it.`}</Text>{result.expense?<Link href={{pathname:'/expenses/[id]',params:{id:result.expense}}} asChild><Button appearance="auth" label="View expense"/></Link>:null}<Button appearance="auth" variant="secondary" style={s.secondary} labelStyle={s.secondaryText} label={bill?'Done':'View bills'} onPress={onClose}/></View>:<>
    {error?<Text accessibilityRole="alert" style={s.error}>{error}</Text>:null}
    {!bill?<>
     <Input appearance="auth" label="Bill name" placeholder="e.g. Electricity" value={title} onChangeText={setTitle} maxLength={120} editable={!locked}/>
     <View style={s.segmented}>{[true,false].map(value=><Pressable key={String(value)} accessibilityRole="button" accessibilityState={{selected:variable===value}} disabled={locked} onPress={()=>setVariable(value)} style={[s.segment,variable===value&&s.selected]}><Text style={[s.segmentText,variable===value&&s.selectedText]}>{value?'Variable amount':'Fixed amount'}</Text></Pressable>)}</View>
-    {variable?<View style={s.info}><Icon name="bolt" color="#2964a3"/><Text style={s.infoText}>You’ll enter the real amount each time this bill is posted.</Text></View>:<Input appearance="auth" label={`Amount (${house.currency})`} keyboardType="decimal-pad" value={amount} onChangeText={setAmount} editable={!locked} placeholder="0"/>}
+    {variable?<View style={s.info}><Icon name="bolt" color={appPalette.info}/><Text style={s.infoText}>You’ll enter the real amount each time this bill is posted.</Text></View>:<Input appearance="auth" label={`Amount (${house.currency})`} keyboardType="decimal-pad" value={amount} onChangeText={setAmount} editable={!locked} placeholder="0"/>}
     <Text style={s.label}>Category</Text><View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>{categories.map(value=><Choice key={value} label={value} selected={category===value} disabled={locked} onPress={()=>setCategory(value)}/>)}</View>
     <Text style={s.label}>Frequency</Text><View style={s.segmented}>{(['weekly','monthly'] as const).map(value=><Pressable key={value} accessibilityRole="button" accessibilityState={{selected:frequency===value}} disabled={locked} onPress={()=>setFrequency(value)} style={[s.segment,frequency===value&&s.selected]}><Text style={[s.segmentText,frequency===value&&s.selectedText]}>{value==='weekly'?'Weekly':'Monthly'}</Text></Pressable>)}</View>
     <Select label="Next due" value={dateLabel(due)} disabled={locked} onPress={()=>setPicker(picker==='due'?null:'due')}/>

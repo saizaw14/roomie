@@ -1,6 +1,7 @@
 import { useRef,useState } from 'react';
 import { Image } from 'expo-image';
-import { Pressable,ScrollView,StyleSheet,Text,TextInput,View } from 'react-native';
+import {ScrollView,StyleSheet,Text,TextInput,View } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { currencies,currencyInfo } from '@/utils/currencies';
 import { authColors as c,authFonts as f } from '@/theme/auth-tokens';
 

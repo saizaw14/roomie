@@ -1,7 +1,9 @@
+import { palette as appPalette } from '@/theme/palette';
 import { NotificationBell } from '@/features/notifications/notifications';
 import { Link } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView,Text,View,Pressable,StyleSheet } from 'react-native';
+import { ScrollView,Text,View,StyleSheet } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { Button } from '@/components/ui/button';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LoadingScreen } from '@/components/ui/loading-screen';
@@ -48,11 +50,11 @@ export function ExpenseListScreen() {
     {groups.map(group=><View key={group.date} style={{gap:12}}><Text accessibilityRole="header" style={x.date}>{new Date(`${group.date}T12:00:00`).toLocaleDateString(undefined,{day:'numeric',month:'long',...(group.date.slice(0,4)!==today.slice(0,4)?{year:'numeric'}:{})})}</Text><View style={x.group}>{group.expenses.map((e,index)=>{
      const splits=query.data?.splits.filter(p=>p.expense_id===e.id)??[];
      const payerNames=members.isSuccess?(query.data?.payers.filter(p=>p.expense_id===e.id).map(p=>name(p.member_id))??[]).join(', '):'Loading…';
-     const bg=e.status==='void'?'#eef0f2':e.category==='Utilities'?'#fff1d5':e.category==='Transport'?'#e9f2fe':'#e7f5f2';
+     const bg=e.status==='void'?appPalette.neutralSoft:e.category==='Utilities'?appPalette.warningSoft:e.category==='Transport'?appPalette.infoSoft:appPalette.primarySoft;
      return <Link key={e.id} href={{pathname:'/expenses/[id]',params:{id:e.id}}} asChild><Pressable accessibilityRole="button" accessibilityLabel={`${e.title}, ${money(e.amount_minor)}, ${e.status}`} style={StyleSheet.flatten([x.row,index>0&&x.divider,e.status==='void'&&{opacity:0.72}])}>
-      <View style={[x.icon,{backgroundColor:bg}]}><Icon color={e.status==='void'?'#6d7581':e.category==='Utilities'?'#a76513':e.category==='Transport'?'#3568a8':'#0f766e'} name={e.status==='void'?'close':e.category==='Groceries'?'groceries':e.category==='Utilities'?'bolt':e.category==='Rent'?'building':'receipt'}/></View>
+      <View style={[x.icon,{backgroundColor:bg}]}><Icon color={e.status==='void'?appPalette.subtleText:e.category==='Utilities'?appPalette.warning:e.category==='Transport'?appPalette.info:appPalette.primary} name={e.status==='void'?'close':e.category==='Groceries'?'groceries':e.category==='Utilities'?'bolt':e.category==='Rent'?'building':'receipt'}/></View>
       <View style={{flex:1}}><Text style={x.title}>{e.title}</Text><Text numberOfLines={1} style={x.meta}>{e.status==='void'?`Voided by ${members.data?.find(m=>m.user_id===e.voided_by)?.display_name??'Household member'}`:`Paid by ${payerNames||'Household member'} · ${splits.length} people`}</Text><Text style={x.share}>{e.status==='void'?'Balance effect removed':members.isSuccess?`Your share ${money(splits.find(p=>p.member_id===myMember?.id)?.owed_minor??0)}`:'Your share unavailable'}</Text></View>
-      <View style={{alignItems:'flex-end',gap:8,flexShrink:1}}><Text style={[x.value,e.status==='void'&&{textDecorationLine:'line-through'}]}>{money(e.amount_minor)}</Text><Status status={e.status==='posted'&&e.version>1?'Revised':e.status==='posted'?'Posted':'Void'}/></View><Icon name="chevron" color="#a1a8b1"/>
+      <View style={{alignItems:'flex-end',gap:8,flexShrink:1}}><Text style={[x.value,e.status==='void'&&{textDecorationLine:'line-through'}]}>{money(e.amount_minor)}</Text><Status status={e.status==='posted'&&e.version>1?'Revised':e.status==='posted'?'Posted':'Void'}/></View><Icon name="chevron" color={appPalette.subtleText}/>
      </Pressable></Link>;
     })}</View></View>)}
    </>}

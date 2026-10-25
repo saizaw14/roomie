@@ -1,6 +1,8 @@
+import { palette as appPalette } from '@/theme/palette';
 import { useEffect, useState } from 'react';
 import { Link, useLocalSearchParams } from 'expo-router';
-import { Platform, Share, Text, View, Pressable, StyleSheet } from 'react-native';
+import { Platform, Share, Text, View, StyleSheet } from 'react-native';
+import { Pressable } from '@/components/ui/pressable';
 import { useIsMutating, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
@@ -129,7 +131,7 @@ export function HouseholdDetailScreen() {
   </>:<Text style={styles.body}>Loading household…</Text>}
  </HouseholdSheet>;
 }
-const tones=[['#e7f5f2','#0f766e'],['#e9f2fe','#3568a8'],['#fff1d7','#a56113'],['#f1eafe','#714db2']];
+const tones=[[appPalette.primarySoft,appPalette.primary],[appPalette.infoSoft,appPalette.info],[appPalette.warningSoft,appPalette.warning],[appPalette.lavenderSoft,appPalette.lavender]];
 const styles=StyleSheet.create({
- form:{padding:14,borderRadius:15,borderColor:c.line,gap:14}, title:{fontFamily:f.bold,color:c.ink,fontSize:17,letterSpacing:-0.3}, body:sheetStyles.text,error:sheetStyles.error,success:{...sheetStyles.text,color:c.primary},small:{fontFamily:f.regular,fontSize:10,lineHeight:16,color:c.muted},bold:{fontFamily:f.semibold,fontSize:12,color:c.ink},code:{fontFamily:f.bold,fontSize:14,letterSpacing:0.5,color:c.ink},tabs:{flexDirection:'row',padding:4,borderRadius:12,backgroundColor:'#e9edf0'},tab:{flex:1,minHeight:40,alignItems:'center',justifyContent:'center',borderRadius:9},selected:{backgroundColor:'white'},tabLabel:{fontFamily:f.semibold,fontSize:12,color:c.muted},members:{backgroundColor:'white',borderWidth:1,borderColor:c.line,borderRadius:16,overflow:'hidden'},member:{minHeight:65,paddingVertical:9,paddingHorizontal:12,flexDirection:'row',alignItems:'center',gap:11},divider:{borderTopWidth:1,borderColor:c.line},avatar:{width:38,height:38,borderRadius:19,alignItems:'center',justifyContent:'center'},initials:{fontFamily:f.extra,fontSize:11},memberName:{fontFamily:f.bold,fontSize:11,color:c.ink},badge:{fontFamily:f.bold,fontSize:9,lineHeight:22,paddingHorizontal:8,borderRadius:10,backgroundColor:'#eaf3fb',color:'#2964a3'},policy:{flexDirection:'row',gap:11,padding:15,borderWidth:1,borderStyle:'dashed',borderColor:'#cbd5dc',borderRadius:15,marginBottom:14},
+ form:{padding:14,borderRadius:15,borderColor:c.line,gap:14}, title:{fontFamily:f.bold,color:c.ink,fontSize:17,letterSpacing:-0.3}, body:sheetStyles.text,error:sheetStyles.error,success:{...sheetStyles.text,color:c.primary},small:{fontFamily:f.regular,fontSize:10,lineHeight:16,color:c.muted},bold:{fontFamily:f.semibold,fontSize:12,color:c.ink},code:{fontFamily:f.bold,fontSize:14,letterSpacing:0.5,color:c.ink},tabs:{flexDirection:'row',padding:4,borderRadius:12,backgroundColor:appPalette.neutralRaised},tab:{flex:1,minHeight:40,alignItems:'center',justifyContent:'center',borderRadius:9},selected:{backgroundColor:'white'},tabLabel:{fontFamily:f.semibold,fontSize:12,color:c.muted},members:{backgroundColor:'white',borderWidth:1,borderColor:c.line,borderRadius:16,overflow:'hidden'},member:{minHeight:65,paddingVertical:9,paddingHorizontal:12,flexDirection:'row',alignItems:'center',gap:11},divider:{borderTopWidth:1,borderColor:c.line},avatar:{width:38,height:38,borderRadius:19,alignItems:'center',justifyContent:'center'},initials:{fontFamily:f.extra,fontSize:11},memberName:{fontFamily:f.bold,fontSize:11,color:c.ink},badge:{fontFamily:f.bold,fontSize:9,lineHeight:22,paddingHorizontal:8,borderRadius:10,backgroundColor:appPalette.infoSoft,color:appPalette.info},policy:{flexDirection:'row',gap:11,padding:15,borderWidth:1,borderStyle:'dashed',borderColor:appPalette.handle,borderRadius:15,marginBottom:14},
 });
