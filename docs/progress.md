@@ -201,3 +201,7 @@ Removed Record manually from Settle Up, its form/state, and the Record a payment
 ## Category color identities — 2026-10-27
 
 Added coordinated sage/amber/lavender/blue/rose category tokens, shared CategoryIcon and CategoryChoice, and consistent accents across expense filters/list/detail/category picker, bill creation/cards, and Home upcoming bills. Preserved neutral void/paused states, semantic payment statuses, labels and haptics. No SQL changes. Lint/typecheck, all 72 tests (including distinct/readable category tokens), and web export pass; physical visual comparison remains unverified.
+
+## Account password security review — 2026-10-27
+
+Verified the app delegates credential storage/verification to Supabase Auth over HTTPS rather than saving passwords in app tables/storage. Supabase documents salted bcrypt hashing; no custom reversible password encryption added. Added required current-password entry to Profile Change password, forwards it as Auth `current_password`, preserves recovery without that field, and clears the login password field after attempted sign-in. Hosted Require current password enforcement and password-policy settings remain to be enabled/verified by the project owner; detailed setup and limitations in `docs/account-security.md`. No SQL migration required. Added SDK/schema tests for submission and rejection behavior.

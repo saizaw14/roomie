@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { createClient } from '@supabase/supabase-js';
 import { readPublicConfig } from '../src/lib/public-config.ts';
 import { createChunkedStorage } from '../src/lib/chunked-storage.ts';
-import { signupSchema, loginSchema, passwordUpdateSchema, profileSchema } from '../src/features/auth/schemas.ts';
+import { signupSchema, loginSchema, passwordUpdateSchema, passwordChangeSchema, profileSchema } from '../src/features/auth/schemas.ts';
 import { createAuthApi } from '../src/features/auth/auth-api.ts';
 import { completeAuthCallback } from '../src/features/auth/callback.ts';
 
@@ -185,4 +185,23 @@ test('native storage read errors are surfaced instead of pretending persistence 
   await assert.rejects(adapter.setItem('session', 'new-session'), /Keychain unavailable/);
   await assert.rejects(adapter.removeItem('session'), /Keychain unavailable/);
   assert.equal(store.map.size, 0);
+});
+
+test('password changes send current password only to Auth and preserve password characters', async()=>{
+ const {api,calls}=mockClient(call=>call.url.endsWith('/user')?json({user}):json(sessionResponse));
+ await api.signIn({email:'alex@example.com',password:' old password '});
+ await api.updatePassword({currentPassword:' old password ',password:' new password ',confirmPassword:' new password '});
+ const update=calls.find(call=>call.method==='PUT'&&call.url.endsWith('/user'));
+ assert.equal(update.body.password,' new password ');
+ assert.equal(update.body.current_password,' old password ');
+ assert.equal(update.body.data,undefined);
+ assert.equal(update.body.confirmPassword,undefined);
+ assert.equal(update.body.currentPassword,undefined);
+});
+
+test('profile password changes require current credentials and propagate Auth rejection',async()=>{
+ assert.equal(passwordChangeSchema.safeParse({password:'new pass word',confirmPassword:'new pass word'}).success,false);
+ const {api}=mockClient(call=>call.method==='PUT'?json({code:'invalid_credentials',msg:'Invalid credentials'},400):json(sessionResponse));
+ await api.signIn({email:'alex@example.com',password:'old password'});
+ await assert.rejects(api.updatePassword({currentPassword:'wrong password',password:'new pass word',confirmPassword:'new pass word'}),error=>error.code==='invalid_credentials');
 });

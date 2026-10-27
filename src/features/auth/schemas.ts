@@ -7,9 +7,13 @@ export const signupSchema = z.object({ name: nameSchema, email: emailSchema,
   password: passwordSchema, confirmPassword: z.string() }).refine(value => value.password === value.confirmPassword,
   { path: ['confirmPassword'], message: 'Passwords do not match.' });
 export const recoverySchema = z.object({ email: emailSchema });
-export const passwordUpdateSchema = z.object({ password: passwordSchema, confirmPassword: z.string() })
+const passwordUpdateFields = z.object({ password: passwordSchema, confirmPassword: z.string(), currentPassword: z.string().min(1, 'Enter your current password.').max(128).optional() });
+export const passwordUpdateSchema = passwordUpdateFields
   .refine(value => value.password === value.confirmPassword,
     { path: ['confirmPassword'], message: 'Passwords do not match.' });
+export const passwordChangeSchema = passwordUpdateFields.extend({ currentPassword: z.string().min(1, 'Enter your current password.').max(128) })
+ .refine(value => value.password === value.confirmPassword, { path: ['confirmPassword'], message: 'Passwords do not match.' });
+export type PasswordChangeValues = z.infer<typeof passwordChangeSchema>;
 export const profileSchema = z.object({ name: nameSchema });
 export type LoginValues = z.infer<typeof loginSchema>;
 export type SignupValues = z.infer<typeof signupSchema>;
