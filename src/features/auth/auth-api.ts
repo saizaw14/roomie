@@ -37,8 +37,8 @@ export function createAuthApi(client: SupabaseClient, callbackUrl: () => string)
       if (error) throw error;
     },
     async updatePassword(input: PasswordUpdateValues) {
-      const { password } = passwordUpdateSchema.parse(input);
-      const { error } = await client.auth.updateUser({ password });
+      const { password, currentPassword } = passwordUpdateSchema.parse(input);
+      const { error } = await client.auth.updateUser({ password, ...(currentPassword === undefined ? {} : { current_password: currentPassword }) });
       if (error) throw error;
     },
     async signOut() {

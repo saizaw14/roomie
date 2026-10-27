@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FormInput } from '@/features/auth/components/form-input';
-import { profileSchema,passwordUpdateSchema,type ProfileValues,type PasswordUpdateValues } from '@/features/auth/schemas';
+import { profileSchema,passwordChangeSchema,type ProfileValues,type PasswordChangeValues } from '@/features/auth/schemas';
 import { authErrorMessage } from '@/features/auth/error-message';
 import { useAuth } from '@/lib/auth-context';
 import { useSaveProfile } from './use-profile';
@@ -24,7 +24,7 @@ export function ProfileEditor({initialName,email,uri,exists,onBusy,onDone}:{init
 }
 export function ProfilePasswordForm({onBusy,onDone}:{onBusy:(busy:boolean)=>void;onDone:()=>void}) {
  const {updatePassword}=useAuth();const [error,setError]=useState<string|null>(null);
- const {control,handleSubmit,formState:{isSubmitting}}=useForm<PasswordUpdateValues>({resolver:zodResolver(passwordUpdateSchema),mode:'onBlur',defaultValues:{password:'',confirmPassword:''}});
+ const {control,handleSubmit,formState:{isSubmitting}}=useForm<PasswordChangeValues>({resolver:zodResolver(passwordChangeSchema),mode:'onBlur',defaultValues:{currentPassword:'',password:'',confirmPassword:''}});
  const submit=handleSubmit(async values=>{onBusy(true);setError(null);try{await updatePassword(values);onDone();}catch(failure){setError(authErrorMessage(failure));}finally{onBusy(false);}});
- return <><FormInput appearance="auth" control={control} name="password" label="New password" placeholder="At least 8 characters" revealable secureTextEntry autoCapitalize="none" autoCorrect={false} autoComplete="new-password" textContentType="newPassword" editable={!isSubmitting}/><FormInput appearance="auth" control={control} name="confirmPassword" label="Confirm new password" revealable secureTextEntry autoCapitalize="none" autoCorrect={false} autoComplete="new-password" textContentType="newPassword" editable={!isSubmitting}/>{error?<Text accessibilityRole="alert" style={s.error}>{error}</Text>:null}<Button appearance="auth" label="Save new password" loading={isSubmitting} onPress={()=>void submit()}/></>;
+ return <><FormInput appearance="auth" control={control} name="currentPassword" label="Current password" revealable secureTextEntry autoCapitalize="none" autoCorrect={false} autoComplete="current-password" textContentType="password" editable={!isSubmitting}/><FormInput appearance="auth" control={control} name="password" label="New password" placeholder="At least 8 characters" revealable secureTextEntry autoCapitalize="none" autoCorrect={false} autoComplete="new-password" textContentType="newPassword" editable={!isSubmitting}/><FormInput appearance="auth" control={control} name="confirmPassword" label="Confirm new password" revealable secureTextEntry autoCapitalize="none" autoCorrect={false} autoComplete="new-password" textContentType="newPassword" editable={!isSubmitting}/>{error?<Text accessibilityRole="alert" style={s.error}>{error}</Text>:null}<Button appearance="auth" label="Save new password" loading={isSubmitting} onPress={()=>void submit()}/></>;
 }

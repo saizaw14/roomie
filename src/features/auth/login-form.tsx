@@ -15,12 +15,12 @@ export function LoginForm() {
   const { signIn, configured } = useAuth();
   const [remember, setRemember] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { control, handleSubmit, formState: { isSubmitting } } = useForm<LoginValues>({
+  const { control, handleSubmit, resetField, formState: { isSubmitting } } = useForm<LoginValues>({
     resolver: zodResolver(loginSchema), mode: 'onBlur', defaultValues: { email: '', password: '' },
   });
   const submit = handleSubmit(async values => {
     setError(null);
-    try { await signIn(values, remember); } catch (failure) { setError(authErrorMessage(failure)); }
+    try { await signIn(values, remember); } catch (failure) { setError(authErrorMessage(failure)); } finally { resetField('password'); }
   });
   return <DesignAuthScreen title="Sign in to Roomie" eyebrow="Welcome back" description="Your household finances are right where you left them.">
     <View>
