@@ -197,3 +197,7 @@ Profile Members and Household settings now open distinct protected bottom-sheet 
 ## Remove manual repayment entry — 2026-10-25
 
 Removed Record manually from Settle Up, its form/state, and the Record a payment without QR fallback. The QR receipt submission and recipient review/confirmation flows remain available, including existing repayment history. Kept backend settlement functions because QR recording depends on them. No migration needed. Lint/typecheck pass.
+
+## Category color identities — 2026-10-27
+
+Added coordinated sage/amber/lavender/blue/rose category tokens, shared CategoryIcon and CategoryChoice, and consistent accents across expense filters/list/detail/category picker, bill creation/cards, and Home upcoming bills. Preserved neutral void/paused states, semantic payment statuses, labels and haptics. No SQL changes. Lint/typecheck, all 72 tests (including distinct/readable category tokens), and web export pass; physical visual comparison remains unverified.

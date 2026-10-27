@@ -1,3 +1,4 @@
+import {categoryColors,categoryColor} from '../src/theme/category-colors.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {palette as p} from '../src/theme/palette.ts';
@@ -7,4 +8,10 @@ test('shared theme text, statuses and action colors meet normal-text contrast ta
  for(const bg of [p.surface,p.background,p.primarySoft,p.selected])for(const fg of [p.ink,p.muted,p.primary])assert.ok(contrast(fg,bg)>=4.5,`${fg} on ${bg}: ${contrast(fg,bg)}`);
  for(const [fg,bg] of [[p.surface,p.primary],[p.placeholder,p.surface],[p.subtleText,p.background],[p.success,p.successSoft],[p.warning,p.warningSoft],[p.error,p.errorSoft],[p.info,p.infoSoft],[p.lavender,p.lavenderSoft]])assert.ok(contrast(fg,bg)>=4.5,`${fg} on ${bg}`);
  assert.ok(contrast(p.inputBorder,p.surface)>=3,'Input boundaries remain visible against white fields');
+});
+
+test('category colors stay distinct, readable and have a safe unknown-category fallback',()=>{
+ assert.equal(new Set(Object.values(categoryColors).map(tone=>tone.foreground)).size,5);
+ for(const tone of Object.values(categoryColors))assert.ok(contrast(tone.foreground,tone.background)>=4.5);
+ assert.deepEqual(categoryColor('Unknown'),{foreground:p.muted,background:p.neutralSoft});
 });

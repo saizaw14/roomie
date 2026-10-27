@@ -22,3 +22,7 @@ The theme covers auth, welcome art, Home, Expenses and its form, Bills, profile,
 Measured contrast: white on primary 7.37:1, ink on ivory 10.96:1, muted on ivory 4.90:1, and placeholder text on white 4.61:1. Tests guard key text/status combinations at 4.5:1 and input boundaries against white at 3:1, following the [WCAG contrast guidance](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html). This is token-level checking, not certification of every rendered screen, opacity, image, disabled state or user setting. Labels and icons continue to communicate status alongside color.
 
 Splash and Android adaptive background configuration now match the theme. A new native build is needed to see native splash/config changes; normal screen colors update with the app bundle. Existing launcher/splash bitmap artwork is unchanged.
+
+## Category identities
+
+Expense and bill categories use `src/theme/category-colors.ts`: Groceries sage, Utilities amber, Rent lavender, Transport blue, and Other muted rose. Apply the same foreground/soft background through CategoryIcon and CategoryChoice. Status badges stay independent; voided/paused icons use neutral styling. All five category foreground/background pairs pass the 4.5:1 token contrast check, with labels and selected checkmarks so color is not the sole identifier.
