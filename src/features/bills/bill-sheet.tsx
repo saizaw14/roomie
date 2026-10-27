@@ -8,7 +8,7 @@ import { requireSupabase } from '@/lib/supabase';
 import { HouseholdSheet } from '@/features/households/household-sheet';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Choice,Icon,Row } from '@/features/expenses/ui';
+import { Choice,CategoryChoice,Icon,Row } from '@/features/expenses/ui';
 import { DateRangeCalendar } from '@/features/expenses/date-range-calendar';
 import { categories,decimal,localToday,money,parseMinor,validDate } from '@/features/expenses/domain';
 import { DashboardIcon } from '@/features/dashboard/components';
@@ -47,7 +47,7 @@ export function BillSheet({bill,house,members,owner,onClose}:{bill:Bill|null;hou
     <Input appearance="auth" label="Bill name" placeholder="e.g. Electricity" value={title} onChangeText={setTitle} maxLength={120} editable={!locked}/>
     <View style={s.segmented}>{[true,false].map(value=><Pressable key={String(value)} accessibilityRole="button" accessibilityState={{selected:variable===value}} disabled={locked} onPress={()=>setVariable(value)} style={[s.segment,variable===value&&s.selected]}><Text style={[s.segmentText,variable===value&&s.selectedText]}>{value?'Variable amount':'Fixed amount'}</Text></Pressable>)}</View>
     {variable?<View style={s.info}><Icon name="bolt" color={appPalette.info}/><Text style={s.infoText}>You’ll enter the real amount each time this bill is posted.</Text></View>:<Input appearance="auth" label={`Amount (${house.currency})`} keyboardType="decimal-pad" value={amount} onChangeText={setAmount} editable={!locked} placeholder="0"/>}
-    <Text style={s.label}>Category</Text><View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>{categories.map(value=><Choice key={value} label={value} selected={category===value} disabled={locked} onPress={()=>setCategory(value)}/>)}</View>
+    <Text style={s.label}>Category</Text><View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>{categories.map(value=><CategoryChoice key={value} label={value} selected={category===value} disabled={locked} onPress={()=>setCategory(value)}/>)}</View>
     <Text style={s.label}>Frequency</Text><View style={s.segmented}>{(['weekly','monthly'] as const).map(value=><Pressable key={value} accessibilityRole="button" accessibilityState={{selected:frequency===value}} disabled={locked} onPress={()=>setFrequency(value)} style={[s.segment,frequency===value&&s.selected]}><Text style={[s.segmentText,frequency===value&&s.selectedText]}>{value==='weekly'?'Weekly':'Monthly'}</Text></Pressable>)}</View>
     <Select label="Next due" value={dateLabel(due)} disabled={locked} onPress={()=>setPicker(picker==='due'?null:'due')}/>
     {picker==='due'?<DateRangeCalendar single start={due} end={due} onChange={range=>{setDue(range.start);setPicker(null);}}/>:null}

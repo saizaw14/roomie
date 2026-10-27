@@ -1,3 +1,4 @@
+import { categoryColor } from '@/theme/category-colors';
 import { palette as appPalette } from '@/theme/palette';
 import { currencyInfo } from '@/utils/currencies';
 import { router,useLocalSearchParams } from 'expo-router';
@@ -73,7 +74,7 @@ function ExpenseForm({household,currency,members,original}:{household:string;cur
    <FormInput appearance="auth" containerStyle={{marginBottom:0}} control={control} name="title" label="Title" placeholder="e.g. Groceries" editable={!busy}/>
    <FormInput appearance="auth" containerStyle={{marginBottom:0}} control={control} name="amount" label="Amount" prefix={currency==='MYR'?'RM':currency} style={x.amount} placeholder={currencyInfo(currency).decimals===0?'0':`0.${'0'.repeat(currencyInfo(currency).decimals)}`} keyboardType="decimal-pad" editable={!busy}/>
    <View style={x.fieldGrid}><View style={x.half}><SelectField label="Category" value={values.category} expanded={picker==='category'} onPress={()=>setPicker(picker==='category'?null:'category')}/></View><View style={x.half}><SelectField label="Date" value={dateLabel} expanded={picker==='date'} onPress={()=>setPicker(picker==='date'?null:'date')}/></View></View>
-   {picker==='category'?<View style={x.options}>{categories.map((category,index)=><Pressable key={category} accessibilityRole="radio" accessibilityState={{checked:values.category===category}} onPress={()=>{setValue('category',category,{shouldValidate:true});setPicker(null);}} style={[x.option,index>0&&x.divider,values.category===category&&x.optionSelected]}><Text style={[x.value,{flex:1}]}>{category}</Text>{values.category===category?<Icon name="check"/>:null}</Pressable>)}</View>:null}
+   {picker==='category'?<View style={x.options}>{categories.map((category,index)=><Pressable key={category} accessibilityRole="radio" accessibilityState={{checked:values.category===category}} onPress={()=>{setValue('category',category,{shouldValidate:true});setPicker(null);}} style={[x.option,index>0&&x.divider,{backgroundColor:categoryColor(category).background}]}><Text style={[x.value,{flex:1,color:categoryColor(category).foreground}]}>{category}</Text>{values.category===category?<Icon name="check"/>:null}</Pressable>)}</View>:null}
    {picker==='date'?<DateRangeCalendar single start={values.date} end={values.date} onChange={range=>{setValue('date',range.start,{shouldValidate:true});setPicker(null);}}/>:null}
    {errors.date?<Text accessibilityRole="alert" style={s.error}>{errors.date.message}</Text>:null}
    <SelectField label="Paid by" value={`${name(values.payer)}${isYou(values.payer)?' (you)':''}`} leading={<MemberAvatar name={name(values.payer)} index={avatarIndex(values.payer)} small/>} expanded={picker==='payer'} onPress={()=>setPicker(picker==='payer'?null:'payer')}/>

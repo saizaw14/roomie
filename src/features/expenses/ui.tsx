@@ -1,3 +1,4 @@
+import { categoryColor } from '@/theme/category-colors';
 import { pressFeedback } from '@/lib/press-feedback';
 import { palette as appPalette } from '@/theme/palette';
 import type { PropsWithChildren } from 'react';
@@ -24,6 +25,14 @@ export function ExpenseScreen({title,subtitle,children,sheet=false}:PropsWithChi
 }
 export function ExpenseCard({children}:PropsWithChildren) {return <Card style={s.card}>{children}</Card>;}
 export function Choice({label,selected,onPress,disabled=false}:{label:string;selected:boolean;onPress:()=>void;disabled?:boolean}) {return <Pressable accessibilityRole="button" accessibilityState={{selected,disabled}} disabled={disabled} onPress={onPress} style={[s.chip,selected&&s.selected]}><Text style={[s.chipText,selected&&{color:c.primary}]}>{label}</Text></Pressable>;}
+export function CategoryChoice({label,selected,onPress,disabled=false}:{label:string;selected:boolean;onPress:()=>void;disabled?:boolean}) {
+ const tone=categoryColor(label);
+ return <Pressable accessibilityRole="button" accessibilityState={{selected,disabled}} disabled={disabled} onPress={onPress} style={[s.chip,{backgroundColor:tone.background,borderColor:selected?tone.foreground:c.line}]}><Text style={[s.chipText,{color:tone.foreground}]}>{selected?'✓ ':''}{label}</Text></Pressable>;
+}
+export function CategoryIcon({category,inactive=false}:{category:string;inactive?:boolean}) {
+ const tone=categoryColor(category);
+ return <View style={{width:42,height:42,borderRadius:13,alignItems:'center',justifyContent:'center',backgroundColor:inactive?appPalette.neutralSoft:tone.background}}><Icon name={inactive?'receipt':category==='Groceries'?'groceries':category==='Utilities'?'bolt':category==='Rent'?'building':'receipt'} color={inactive?c.muted:tone.foreground}/></View>;
+}
 export function Avatar({name}:{name:string}) {return <View style={s.avatar}><Text style={s.avatarText}>{name.split(' ').slice(0,2).map(n=>n[0]).join('').toUpperCase()}</Text></View>;}
 export function Status({status}:{status:string}) {return <Text style={[s.badge,status.toLowerCase()==='void'?s.voidBadge:status.toLowerCase()==='posted'?s.postedBadge:null]}>{status}</Text>;}
 export function Row({label,value}:{label:string;value:string}) {return <View style={s.row}><Text style={s.small}>{label}</Text><Text style={[s.bold,{flexShrink:1,textAlign:'right'}]}>{value}</Text></View>;}

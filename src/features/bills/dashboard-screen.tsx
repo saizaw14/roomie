@@ -12,7 +12,7 @@ import { HouseholdEmptyState } from '@/features/households/household-empty-state
 import { householdError } from '@/features/households/validation';
 import { useExpenseMembers } from '@/features/expenses/hooks';
 import { localToday,money } from '@/features/expenses/domain';
-import { Icon } from '@/features/expenses/ui';
+import { CategoryIcon } from '@/features/expenses/ui';
 import { NotificationBell } from '@/features/notifications/notifications';
 import { DashboardIcon,styles as d } from '@/features/dashboard/components';
 import { BillSheet } from './bill-sheet';
@@ -49,7 +49,7 @@ function BillCard({bill,today,currency,payer,ownMember,disabled,onPress}:{bill:B
  const index=ownMember?bill.participants.indexOf(ownMember):-1;
  const share=bill.amount_minor===null?null:index<0?0:Math.floor(bill.amount_minor/bill.participants.length)+(index<bill.amount_minor%bill.participants.length?1:0);
  return <Pressable accessibilityRole="button" accessibilityLabel={`${bill.title}, ${bill.active?dueLabel(bill.next_due_date,today):'paused'}. Open bill details.`} disabled={disabled} onPress={onPress} style={({pressed})=>[s.card,overdue&&s.overdue,!bill.active&&s.paused,pressed&&{opacity:0.8}]}>
-  <View style={s.head}><View style={[s.icon,bill.category==='Utilities'&&s.electric,!bill.active&&s.gray]}><Icon name={!bill.active?'receipt':bill.category==='Utilities'?'bolt':bill.category==='Rent'?'building':'receipt'} color={!bill.active?appPalette.subtleText:bill.category==='Utilities'?appPalette.warning:appPalette.primary}/></View><Text style={[s.badge,overdue&&s.errorBadge,!bill.active&&s.neutralBadge]}>{bill.active?dueLabel(bill.next_due_date,today):'Paused'}</Text></View>
+  <View style={s.head}><CategoryIcon category={bill.category} inactive={!bill.active}/><Text style={[s.badge,overdue&&s.errorBadge,!bill.active&&s.neutralBadge]}>{bill.active?dueLabel(bill.next_due_date,today):'Paused'}</Text></View>
   <Text style={s.name}>{bill.title}</Text><Text style={s.detail}>{!bill.active?'No future reminders':variable?`Variable amount · ${bill.frequency==='monthly'?'Monthly':'Weekly'}`:`Fixed · Paid by ${payer} · ${bill.participants.length} people`}</Text>
   {bill.active?<><Text style={s.amount}>{variable?'Amount to be entered':money(bill.amount_minor!,currency)}</Text>{attention?<View style={s.secondary}><Text style={s.secondaryText}>Review & post expense</Text></View>:share!==null?<View style={s.split}><Text style={s.small}>Your share</Text><Text style={s.bold}>{money(share,currency)}</Text></View>:null}</>:null}
  </Pressable>;
