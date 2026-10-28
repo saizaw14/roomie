@@ -1,4 +1,4 @@
-import { categoryColor } from '@/theme/category-colors';
+import { displayExpenseTitle } from './display-title';
 import { palette as appPalette } from '@/theme/palette';
 import { NotificationBell } from '@/features/notifications/notifications';
 import { Link } from 'expo-router';
@@ -18,7 +18,7 @@ import { useAuth } from '@/lib/auth-context';
 import { categories,money as formatMoney,localToday,validDate } from './domain';
 import { useExpenses,useExpenseMembers } from './hooks';
 import { expenseError } from './validation';
-import { ExpenseCard,CategoryChoice,Status,Icon,s } from './ui';
+import { ExpenseCard,CategoryChoice,CategoryIcon,Status,Icon,s } from './ui';
 export function ExpenseListScreen() {
  const [loaded,fontError]=useRoomieFonts();
  const house=useHouseholds();const {session}=useAuth();const query=useExpenses(house.current?.id??'');const members=useExpenseMembers(house.current?.id??'');
@@ -51,10 +51,9 @@ export function ExpenseListScreen() {
     {groups.map(group=><View key={group.date} style={{gap:12}}><Text accessibilityRole="header" style={x.date}>{new Date(`${group.date}T12:00:00`).toLocaleDateString(undefined,{day:'numeric',month:'long',...(group.date.slice(0,4)!==today.slice(0,4)?{year:'numeric'}:{})})}</Text><View style={x.group}>{group.expenses.map((e,index)=>{
      const splits=query.data?.splits.filter(p=>p.expense_id===e.id)??[];
      const payerNames=members.isSuccess?(query.data?.payers.filter(p=>p.expense_id===e.id).map(p=>name(p.member_id))??[]).join(', '):'Loading…';
-     const tone=categoryColor(e.category);const bg=e.status==='void'?appPalette.neutralSoft:tone.background;
-     return <Link key={e.id} href={{pathname:'/expenses/[id]',params:{id:e.id}}} asChild><Pressable accessibilityRole="button" accessibilityLabel={`${e.title}, ${money(e.amount_minor)}, ${e.status}`} style={StyleSheet.flatten([x.row,index>0&&x.divider,e.status==='void'&&{opacity:0.72}])}>
-      <View style={[x.icon,{backgroundColor:bg}]}><Icon color={e.status==='void'?appPalette.subtleText:tone.foreground} name={e.status==='void'?'close':e.category==='Groceries'?'groceries':e.category==='Utilities'?'bolt':e.category==='Rent'?'building':'receipt'}/></View>
-      <View style={{flex:1}}><Text style={x.title}>{e.title}</Text><Text numberOfLines={1} style={x.meta}>{e.status==='void'?`Voided by ${members.data?.find(m=>m.user_id===e.voided_by)?.display_name??'Household member'}`:`Paid by ${payerNames||'Household member'} · ${splits.length} people`}</Text><Text style={x.share}>{e.status==='void'?'Balance effect removed':members.isSuccess?`Your share ${money(splits.find(p=>p.member_id===myMember?.id)?.owed_minor??0)}`:'Your share unavailable'}</Text></View>
+     return <Link key={e.id} href={{pathname:'/expenses/[id]',params:{id:e.id}}} asChild><Pressable accessibilityRole="button" accessibilityLabel={`${displayExpenseTitle(e.title)}, ${money(e.amount_minor)}, ${e.status}`} style={StyleSheet.flatten([x.row,index>0&&x.divider,e.status==='void'&&{opacity:0.72}])}>
+      <CategoryIcon category={e.category} inactive={e.status==='void'}/>
+      <View style={{flex:1}}><Text style={x.title}>{displayExpenseTitle(e.title)}</Text><Text numberOfLines={1} style={x.meta}>{e.status==='void'?`Voided by ${members.data?.find(m=>m.user_id===e.voided_by)?.display_name??'Household member'}`:`Paid by ${payerNames||'Household member'} · ${splits.length} people`}</Text><Text style={x.share}>{e.status==='void'?'Balance effect removed':members.isSuccess?`Your share ${money(splits.find(p=>p.member_id===myMember?.id)?.owed_minor??0)}`:'Your share unavailable'}</Text></View>
       <View style={{alignItems:'flex-end',gap:8,flexShrink:1}}><Text style={[x.value,e.status==='void'&&{textDecorationLine:'line-through'}]}>{money(e.amount_minor)}</Text><Status status={e.status==='posted'&&e.version>1?'Revised':e.status==='posted'?'Posted':'Void'}/></View><Icon name="chevron" color={appPalette.subtleText}/>
      </Pressable></Link>;
     })}</View></View>)}

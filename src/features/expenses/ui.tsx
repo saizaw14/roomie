@@ -1,3 +1,4 @@
+import { categoryIconName } from './category-icons';
 import { categoryColor } from '@/theme/category-colors';
 import { pressFeedback } from '@/lib/press-feedback';
 import { palette as appPalette } from '@/theme/palette';
@@ -11,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LoadingScreen } from '@/components/ui/loading-screen';
 import { Card } from '@/components/ui/card';
 import { authColors as c,authFonts as f } from '@/theme/auth-tokens';
-export const icons={groceries:require('../../../assets/images/expenses/groceries.svg'),receipt:require('../../../assets/images/expenses/receipt.svg'),bolt:require('../../../assets/images/expenses/bolt.svg'),building:require('../../../assets/images/expenses/building.svg'),close:require('../../../assets/images/expenses/close.svg'),chevron:require('../../../assets/images/expenses/chevron.svg'),check:require('../../../assets/images/expenses/check.svg'),history:require('../../../assets/images/expenses/history.svg')};
+export const icons={transport:require('../../../assets/images/expenses/transport.svg'),other:require('../../../assets/images/expenses/other.svg'),groceries:require('../../../assets/images/expenses/groceries.svg'),receipt:require('../../../assets/images/expenses/receipt.svg'),bolt:require('../../../assets/images/expenses/bolt.svg'),building:require('../../../assets/images/expenses/building.svg'),close:require('../../../assets/images/expenses/close.svg'),chevron:require('../../../assets/images/expenses/chevron.svg'),check:require('../../../assets/images/expenses/check.svg'),history:require('../../../assets/images/expenses/history.svg')};
 export function Icon({name,color}:{name:keyof typeof icons;color?:string}) {return <Image source={icons[name]} style={{width:20,height:20}} tintColor={color} contentFit="contain" />;}
 export function ExpenseScreen({title,subtitle,children,sheet=false}:PropsWithChildren<{title:string;subtitle?:string;sheet?:boolean}>) {
  const [loaded,error]=useFonts({RoomieInter:require('../../../assets/fonts/Inter-Regular.ttf'),RoomieInterMedium:require('../../../assets/fonts/Inter-Medium.ttf'),RoomieInterSemiBold:require('../../../assets/fonts/Inter-SemiBold.ttf'),RoomieInterBold:require('../../../assets/fonts/Inter-Bold.ttf'),RoomieInterExtraBold:require('../../../assets/fonts/Inter-ExtraBold.ttf')});
@@ -27,11 +28,11 @@ export function ExpenseCard({children}:PropsWithChildren) {return <Card style={s
 export function Choice({label,selected,onPress,disabled=false}:{label:string;selected:boolean;onPress:()=>void;disabled?:boolean}) {return <Pressable accessibilityRole="button" accessibilityState={{selected,disabled}} disabled={disabled} onPress={onPress} style={[s.chip,selected&&s.selected]}><Text style={[s.chipText,selected&&{color:c.primary}]}>{label}</Text></Pressable>;}
 export function CategoryChoice({label,selected,onPress,disabled=false}:{label:string;selected:boolean;onPress:()=>void;disabled?:boolean}) {
  const tone=categoryColor(label);
- return <Pressable accessibilityRole="button" accessibilityState={{selected,disabled}} disabled={disabled} onPress={onPress} style={[s.chip,{backgroundColor:tone.background,borderColor:selected?tone.foreground:c.line}]}><Text style={[s.chipText,{color:tone.foreground}]}>{selected?'✓ ':''}{label}</Text></Pressable>;
+ return <Pressable accessibilityRole="button" accessibilityState={{selected,disabled}} disabled={disabled} onPress={onPress} style={[s.chip,{backgroundColor:tone.background,borderColor:selected?tone.foreground:c.line}]}><View style={{flexDirection:'row',alignItems:'center',gap:6}}><Icon name={categoryIconName(label)} color={tone.foreground}/><Text style={[s.chipText,{color:tone.foreground}]}>{selected?'✓ ':''}{label}</Text></View></Pressable>;
 }
 export function CategoryIcon({category,inactive=false}:{category:string;inactive?:boolean}) {
  const tone=categoryColor(category);
- return <View style={{width:42,height:42,borderRadius:13,alignItems:'center',justifyContent:'center',backgroundColor:inactive?appPalette.neutralSoft:tone.background}}><Icon name={inactive?'receipt':category==='Groceries'?'groceries':category==='Utilities'?'bolt':category==='Rent'?'building':'receipt'} color={inactive?c.muted:tone.foreground}/></View>;
+ return <View style={{width:42,height:42,borderRadius:13,alignItems:'center',justifyContent:'center',backgroundColor:inactive?appPalette.neutralSoft:tone.background}}><Icon name={categoryIconName(category)} color={inactive?c.muted:tone.foreground}/></View>;
 }
 export function Avatar({name}:{name:string}) {return <View style={s.avatar}><Text style={s.avatarText}>{name.split(' ').slice(0,2).map(n=>n[0]).join('').toUpperCase()}</Text></View>;}
 export function Status({status}:{status:string}) {return <Text style={[s.badge,status.toLowerCase()==='void'?s.voidBadge:status.toLowerCase()==='posted'?s.postedBadge:null]}>{status}</Text>;}
