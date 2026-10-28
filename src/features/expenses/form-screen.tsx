@@ -1,3 +1,4 @@
+import { categoryIconName } from './category-icons';
 import { categoryColor } from '@/theme/category-colors';
 import { palette as appPalette } from '@/theme/palette';
 import { currencyInfo } from '@/utils/currencies';
@@ -42,7 +43,7 @@ export function ExpenseFormScreen({editing=false}:{editing?:boolean}) {
 function ExpenseForm({household,currency,members,original}:{household:string;currency:string;members:Members;original?:Detail}) {
  const decimal=(value:number)=>currencyDecimal(value,currency);const money=(value:number)=>formatMoney(value,currency);const parseMinor=(input:string,allowZero=false)=>parseAmount(input,allowZero,currency);
  const {session}=useAuth();const client=useQueryClient();const active=members.filter(m=>m.status==='active');
- const [picker,setPicker]=useState<'category'|'date'|'payer'|null>(null);const [notesOpen,setNotesOpen]=useState(!!original?.expense.notes);
+ const [picker,setPicker]=useState<'category'|'date'|'payer'|null>(null);
  const [savedId,setSavedId]=useState<string|null>(null);
  const [step,setStep]=useState(1);const [method,setMethod]=useState<SplitMethod>(original?.expense.split_method??'equal');
  const [selected,setSelected]=useState<string[]>(()=>original?original.splits.filter(p=>active.some(m=>m.id===p.member_id)).map(p=>p.member_id):active.map(m=>m.id));
@@ -74,7 +75,7 @@ function ExpenseForm({household,currency,members,original}:{household:string;cur
    <FormInput appearance="auth" containerStyle={{marginBottom:0}} control={control} name="title" label="Title" placeholder="e.g. Groceries" editable={!busy}/>
    <FormInput appearance="auth" containerStyle={{marginBottom:0}} control={control} name="amount" label="Amount" prefix={currency==='MYR'?'RM':currency} style={x.amount} placeholder={currencyInfo(currency).decimals===0?'0':`0.${'0'.repeat(currencyInfo(currency).decimals)}`} keyboardType="decimal-pad" editable={!busy}/>
    <View style={x.fieldGrid}><View style={x.half}><SelectField label="Category" value={values.category} expanded={picker==='category'} onPress={()=>setPicker(picker==='category'?null:'category')}/></View><View style={x.half}><SelectField label="Date" value={dateLabel} expanded={picker==='date'} onPress={()=>setPicker(picker==='date'?null:'date')}/></View></View>
-   {picker==='category'?<View style={x.options}>{categories.map((category,index)=><Pressable key={category} accessibilityRole="radio" accessibilityState={{checked:values.category===category}} onPress={()=>{setValue('category',category,{shouldValidate:true});setPicker(null);}} style={[x.option,index>0&&x.divider,{backgroundColor:categoryColor(category).background}]}><Text style={[x.value,{flex:1,color:categoryColor(category).foreground}]}>{category}</Text>{values.category===category?<Icon name="check"/>:null}</Pressable>)}</View>:null}
+   {picker==='category'?<View style={x.options}>{categories.map((category,index)=><Pressable key={category} accessibilityRole="radio" accessibilityState={{checked:values.category===category}} onPress={()=>{setValue('category',category,{shouldValidate:true});setPicker(null);}} style={[x.option,index>0&&x.divider,{backgroundColor:categoryColor(category).background}]}><Icon name={categoryIconName(category)} color={categoryColor(category).foreground}/><Text style={[x.value,{flex:1,color:categoryColor(category).foreground}]}>{category}</Text>{values.category===category?<Icon name="check"/>:null}</Pressable>)}</View>:null}
    {picker==='date'?<DateRangeCalendar single start={values.date} end={values.date} onChange={range=>{setValue('date',range.start,{shouldValidate:true});setPicker(null);}}/>:null}
    {errors.date?<Text accessibilityRole="alert" style={s.error}>{errors.date.message}</Text>:null}
    <SelectField label="Paid by" value={`${name(values.payer)}${isYou(values.payer)?' (you)':''}`} leading={<MemberAvatar name={name(values.payer)} index={avatarIndex(values.payer)} small/>} expanded={picker==='payer'} onPress={()=>setPicker(picker==='payer'?null:'payer')}/>
@@ -82,7 +83,7 @@ function ExpenseForm({household,currency,members,original}:{household:string;cur
    {errors.payer?<Text accessibilityRole="alert" style={s.error}>{errors.payer.message}</Text>:null}
    <View style={x.participantTitle}><Text style={x.participantLabel}>Split with</Text><Text style={x.participantCount}>{selected.length} selected</Text></View>
    <View style={x.participants}>{active.map((member,index)=><Pressable key={member.id} accessibilityRole="checkbox" accessibilityLabel={`Split with ${member.display_name}`} accessibilityState={{checked:selected.includes(member.id)}} onPress={()=>setSelected(ids=>ids.includes(member.id)?ids.filter(id=>id!==member.id):[...ids,member.id])} style={[x.tile,selected.includes(member.id)&&x.tileSelected]}><MemberAvatar name={member.display_name} index={index}/><Text style={x.tileName}>{member.display_name}</Text>{selected.includes(member.id)?<View style={x.check}><Image source={icons.check} style={x.checkIcon} tintColor="white" contentFit="contain"/></View>:null}</Pressable>)}</View>
-   {notesOpen?<FormInput appearance="auth" containerStyle={{marginBottom:0}} control={control} name="notes" label="Notes (optional)" multiline maxLength={1000} editable={!busy}/>:<Pressable accessibilityRole="button" onPress={()=>setNotesOpen(true)} style={x.noteToggle}><Text style={x.noteLink}>Add a note (optional)</Text></Pressable>}
+   <FormInput appearance="auth" containerStyle={{marginBottom:0}} control={control} name="notes" label="Notes (optional)" placeholder="Add a note…" multiline textAlignVertical="top" style={x.notesInput} maxLength={1000} editable={!busy}/>
    <Button appearance="auth" label="Continue to split" onPress={()=>void move()}/>
   </>:step===2?<>
    <View style={x.segmented}>{(['equal','exact','percentage'] as const).map(value=><Pressable key={value} accessibilityRole="radio" accessibilityState={{checked:method===value}} onPress={()=>changeMethod(value)} style={[x.segment,method===value&&x.segmentActive]}><Text style={[x.segmentLabel,method===value&&x.segmentActiveLabel]}>{value[0].toUpperCase()+value.slice(1)}</Text></Pressable>)}</View>

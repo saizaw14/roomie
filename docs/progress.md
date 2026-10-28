@@ -205,3 +205,11 @@ Added coordinated sage/amber/lavender/blue/rose category tokens, shared Category
 ## Account password security review — 2026-10-27
 
 Verified the app delegates credential storage/verification to Supabase Auth over HTTPS rather than saving passwords in app tables/storage. Supabase documents salted bcrypt hashing; no custom reversible password encryption added. Added required current-password entry to Profile Change password, forwards it as Auth `current_password`, preserves recovery without that field, and clears the login password field after attempted sign-in. Hosted Require current password enforcement and password-policy settings remain to be enabled/verified by the project owner; detailed setup and limitations in `docs/account-security.md`. No SQL migration required. Added SDK/schema tests for submission and rejection behavior.
+
+## Sign-in failure diagnostics — 2026-10-28
+
+User reported the generic account-request error during sign-in. Read-only hosted checks returned Auth health HTTP 200 and email provider enabled, using only public configuration. No account login/password attempt was performed. Added explicit CAPTCHA, browser storage, key/configuration, timeout and rate-limit messages plus bounded code/HTTP references for otherwise hidden failures; raw server messages and credentials are not displayed. Root cause of the user's login remains unconfirmed until the new reference is captured. Lint/typecheck and all 75 tests pass, including diagnostics redaction.
+
+## Category icon consistency — 2026-10-28
+
+Centralized category symbols across cards, filters, selectors, bill cards and Home activity/upcoming: shopping bag for Groceries, lightning for Utilities, building for Rent, car for Transport, grid for Other. Added local 20px transport/grid SVGs matching the existing stroke style. Paused/voided categories retain their symbol with neutral coloring. Icons follow the stored category; expense titles are not used to rewrite classification. No SQL/data changes. Lint/typecheck and all 75 tests pass; web export verified.

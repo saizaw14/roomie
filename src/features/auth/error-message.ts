@@ -11,6 +11,18 @@ export function authErrorMessage(error: unknown): string {
   if (code === 'otp_expired' || code === 'flow_state_expired' || code === 'flow_state_not_found' || code === 'pkce_code_verifier_not_found') return 'This link has expired or has already been used. Request a new email and open it on this device.';
   if (code === 'same_password') return 'Choose a different password from your current one.';
   if (code === 'weak_password') return 'Choose a stronger password that meets the account password policy.';
+  const details = typeof error === 'object' && error !== null ? error as {name?:unknown;message?:unknown;status?:unknown} : {};
+  const message = typeof details.message === 'string' ? details.message : '';
+  if (code === 'captcha_failed') return 'Sign-in requires a CAPTCHA check. Ask the project owner to finish the CAPTCHA integration before retrying.';
+  if (code === 'request_timeout' || details.name === 'AbortError' || details.name === 'TimeoutError') return 'The account request timed out. Check your connection and try again.';
+  if (details.name === 'SecurityError' || details.name === 'QuotaExceededError') return 'This browser could not save your session. Allow site storage or try signing in with “Keep me signed in” unchecked.';
+  if (/invalid api key|no api key found/i.test(message)) return 'The app’s Supabase key is invalid or outdated. Check the project configuration and restart Roomie.';
+  if (/invalid login credentials/i.test(message)) return 'The email or password is incorrect.';
+  if (typeof details.status === 'number' && details.status === 429) return 'Too many account requests. Please wait a few minutes and try again.';
   if (error instanceof Error && /fetch|network/i.test(error.message)) return 'Could not connect. Check your connection and try again.';
-  return 'We could not complete that request. Please try again. If it continues, check the Roomie setup guide.';
+  // Show only bounded service identifiers, never raw errors, request bodies or credentials.
+  const reference = typeof code === 'string' && /^[a-z][a-z0-9_]{0,63}$/.test(code) ? code
+    : details.name === 'AuthUnknownError' ? 'auth_unknown_error' : 'client_error';
+  const status = typeof details.status === 'number' && Number.isInteger(details.status) && details.status >= 100 && details.status <= 599 ? ` / HTTP ${details.status}` : '';
+  return `We couldn’t complete sign-in or the account request. Please try again. Reference: ${reference}${status}.`;
 }

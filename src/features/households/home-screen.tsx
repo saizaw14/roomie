@@ -1,3 +1,4 @@
+import { displayExpenseTitle } from '@/features/expenses/display-title';
 import { CategoryIcon } from '@/features/expenses/ui';
 import { palette as appPalette } from '@/theme/palette';
 import { UpcomingBills } from '@/features/bills/upcoming-card';
@@ -71,7 +72,7 @@ export function HomeScreen() {
     <UpcomingBills house={house.id} currency={house.currency}/>
     <View style={s.section}><Text accessibilityRole="header" style={s.heading}>Recent activity</Text><Pressable accessibilityRole="button" accessibilityState={{expanded}} onPress={()=>setExpanded(v=>!v)}><Text style={s.link}>{expanded?'Show less':'View more'}</Text></Pressable></View>
     <DashboardCard>
-     {activity.isPending?<Text style={s.small}>Loading activity…</Text>:activity.isError?<><Text accessibilityRole="alert" style={s.error}>{expenseError(activity.error)}</Text><Button appearance="auth" variant="secondary" label="Retry activity" onPress={()=>void activity.refetch()}/></>:activity.data.length===0?<><Text style={s.bold}>Your shared story starts here</Text><Text style={s.small}>Posted, edited, and voided expenses will appear here.</Text></>:activity.data.map(event=><ActivityRow key={event.id} event={event} name={memberName(event.actor_id)} currency={house.currency} category={expenses.data?.expenses.find(expense=>expense.id===event.entity_id)?.category}/>)}
+     {activity.isPending?<Text style={s.small}>Loading activity…</Text>:activity.isError?<><Text accessibilityRole="alert" style={s.error}>{expenseError(activity.error)}</Text><Button appearance="auth" variant="secondary" label="Retry activity" onPress={()=>void activity.refetch()}/></>:activity.data.length===0?<><Text style={s.bold}>Your shared story starts here</Text><Text style={s.small}>Posted, edited, and voided expenses will appear here.</Text></>:activity.data.map((event,index)=><ActivityRow key={event.id} divider={index<activity.data.length-1} event={event} name={memberName(event.actor_id)} currency={house.currency} category={expenses.data?.expenses.find(expense=>expense.id===event.entity_id)?.category}/>)}
      {expanded&&activity.data?.length===50?<Text style={s.small}>Showing the latest 50 changes. Open an expense for its complete revision history.</Text>:null}
     </DashboardCard>
     {members.isError?<Text style={s.small}>Member names could not be loaded. Activity still shows your saved records.</Text>:null}
@@ -87,12 +88,12 @@ export function HomeScreen() {
   </View>
  </SafeAreaView></View>;
 }
-function ActivityRow({event,name,currency,category}:{event:ActivityEvent;name:string;currency:string;category?:string}) {
+function ActivityRow({event,name,currency,category,divider}:{event:ActivityEvent;name:string;currency:string;category?:string;divider:boolean}) {
  const metadata=event.metadata!==null&&typeof event.metadata==='object'&&!Array.isArray(event.metadata)?event.metadata:{};
- const title=typeof metadata.title==='string'?metadata.title:'Household expense';
+ const title=displayExpenseTitle(typeof metadata.title==='string'?metadata.title:'Household expense');
  const action=event.event_type==='expense_created'?'Posted':event.event_type==='expense_edited'?'Edited':event.event_type==='expense_voided'?'Voided':'Changed';
  let amount:string|null=null;try{if(typeof metadata.amount_minor==='number'||typeof metadata.amount_minor==='string')amount=formatMoney(safeMinor(metadata.amount_minor),currency);}catch{}
- return <Link href={{pathname:'/expenses/[id]',params:{id:event.entity_id}}} asChild><Pressable accessibilityRole="button" accessibilityLabel={`${title}, ${action} by ${name}`} style={s.activityRow}>
+ return <Link href={{pathname:'/expenses/[id]',params:{id:event.entity_id}}} asChild><Pressable accessibilityRole="button" accessibilityLabel={`${title}, ${action} by ${name}`} style={StyleSheet.flatten([s.activityRow,!divider&&{borderBottomWidth:0}])}>
   <CategoryIcon category={category??''} inactive={action==='Voided'}/><View style={{flex:1}}><Text style={s.bold}>{title}</Text><Text style={s.small}>{action} by {name}</Text><Text style={[s.small,{fontSize:10}]}>{new Date(event.created_at).toLocaleString()}</Text></View>{amount?<Text style={s.bold}>{amount}</Text>:null}
  </Pressable></Link>;
 }
