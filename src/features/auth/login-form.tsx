@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/auth-context';
 import { loginSchema, type LoginValues } from './schemas';
-import { DesignAuthScreen, designAuthStyles as authStyles, GoogleSignInPlaceholder } from './components/design-auth-screen';
+import { DesignAuthScreen, designAuthStyles as authStyles } from './components/design-auth-screen';
 import { FormInput } from './components/form-input';
 import { authErrorMessage } from './error-message';
 export function LoginForm() {
@@ -39,7 +39,6 @@ export function LoginForm() {
       </View>
       {error ? <Text accessibilityRole="alert" style={authStyles.error}>{error}</Text> : null}
       <Button appearance="auth" label="Sign in" loading={isSubmitting} disabled={!configured} onPress={() => void submit()} />
-      <GoogleSignInPlaceholder />
     </View>
     <View style={authStyles.switch}><Text style={authStyles.small}>New to Roomie?</Text>
       <Link href="/signup" style={authStyles.link} onPress={pressFeedback}>Create account</Link>

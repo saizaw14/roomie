@@ -27,8 +27,8 @@ export function Button({ label, labelStyle, leadingIcon, appearance = 'default',
 }
 const styles = StyleSheet.create({
   content: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  auth: { minHeight: 50, borderRadius: 13, paddingVertical: 12, backgroundColor: authColors.primary },
-  authLabel: { fontFamily: authFonts.bold, fontSize: 14, fontWeight: 'normal' },
+  auth: { minHeight: 54, borderRadius: 13, paddingVertical: 12, backgroundColor: authColors.primary },
+  authLabel: { fontFamily: authFonts.bold, fontSize: 16, fontWeight: 'normal' },
   base: { minHeight: 52, paddingHorizontal: 24, paddingVertical: 14, borderRadius: radius.input,
     backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
   secondary: { backgroundColor: colors.soft }, label: { color: colors.white, fontSize: 16, fontWeight: '600' },
