@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { useState, useId, type Ref } from 'react';
 import { StyleSheet, Text, TextInput, View, type TextInputProps, type StyleProp, type ViewStyle } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
@@ -21,7 +22,7 @@ export function Input({ label, prefix, containerStyle, appearance = 'default', r
         style={[styles.input, compact && styles.authInput, style]} />
       {revealable ? <Pressable accessibilityRole="button" accessibilityLabel={`${visible ? 'Hide' : 'Show'} ${label.toLowerCase()}`}
         disabled={props.editable === false} onPress={() => setVisible(value => !value)} style={styles.reveal}>
-        <Text style={styles.revealText}>{visible ? 'Hide' : 'Show'}</Text>
+        <Image accessible={false} source={visible ? require('../../../assets/images/auth/eye-open.svg') : require('../../../assets/images/auth/eye-closed.svg')} style={styles.revealIcon} tintColor={authColors.primary} />
       </Pressable> : null}
     </View>
     {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> :
@@ -30,13 +31,13 @@ export function Input({ label, prefix, containerStyle, appearance = 'default', r
 }
 const styles = StyleSheet.create({
   prefix: { marginLeft: 13, color: authColors.muted, fontFamily: authFonts.bold, fontSize: 13 },
-  authContainer: { gap: 7, marginBottom: 14 },
-  authLabel: { color: authColors.muted, fontFamily: authFonts.semibold, fontWeight: 'normal', fontSize: 11, marginLeft: 2 },
-  authFrame: { borderColor: authColors.inputBorder, borderRadius: 12 },
-  authInput: { paddingHorizontal: 13, paddingVertical: 0, color: authColors.ink, fontFamily: authFonts.regular, fontSize: 16 },
+  authContainer: { gap: 8, marginBottom: 20 },
+  authLabel: { color: authColors.muted, fontFamily: authFonts.semibold, fontWeight: 'normal', fontSize: 14, lineHeight: 20 },
+  authFrame: { minHeight: 54, borderColor: authColors.inputBorder, borderRadius: 12 },
+  authInput: { paddingHorizontal: 16, paddingVertical: 12, color: authColors.ink, fontFamily: authFonts.regular, fontSize: 16 },
   focused: { borderColor: authColors.primary, boxShadow: `0 0 0 3px ${authColors.soft}` },
   reveal: { minWidth: 52, minHeight: 50, alignItems: 'center', justifyContent: 'center' },
-  revealText: { color: authColors.primary, fontFamily: authFonts.bold, fontSize: 10 },
+  revealIcon: { width: 22, height: 22 },
   container: { gap: spacing.sm }, label: { color: colors.ink, fontSize: 14, fontWeight: '600' },
   frame: { overflow: 'hidden', minHeight: 52, borderWidth: 1, borderColor: colors.border, borderRadius: radius.input, flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface },
   input: { minHeight: 50, flex: 1, minWidth: 0,
