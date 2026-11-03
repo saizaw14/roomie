@@ -31,7 +31,7 @@ export function DesignAuthScreen({ title, eyebrow, description, success = false,
           <View style={s.brand}><View style={s.mark}><Image source={require('../../../../assets/images/auth/home.svg')} style={{ width: 25, height: 25 }} /></View><Text style={s.brandText}>Roomie</Text></View>
           <View style={{ width: 44 }} />
         </View>
-        {!success ? <View style={[s.heading, fixed && s.fixedHeading]}><Text style={s.eyebrow}>{eyebrow}</Text><Text accessibilityRole="header" style={s.title}>{title}</Text>
+        {!success ? <View style={[s.heading, fixed && s.fixedHeading]}>{eyebrow ? <Text style={s.eyebrow}>{eyebrow}</Text> : null}<Text accessibilityRole="header" style={s.title}>{title}</Text>
           {description ? <Text style={s.description}>{description}</Text> : null}
         </View> : null}
         {issue ? <View style={s.notice}><Text accessibilityRole="alert" style={s.description}>{issue}</Text>

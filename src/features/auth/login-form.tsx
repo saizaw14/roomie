@@ -24,9 +24,9 @@ export function LoginForm() {
   });
   return <DesignAuthScreen title="Sign in to Roomie" eyebrow="Welcome back" description="Your household finances are right where you left them.">
     <View>
-      <FormInput control={control} name="email" appearance="auth" label="Email address" placeholder="name@example.com"
+      <FormInput reserveErrorSpace containerStyle={{ marginBottom: 8 }} control={control} name="email" appearance="auth" label="Email address" placeholder="name@example.com"
         autoCapitalize="none" autoCorrect={false} keyboardType="email-address" autoComplete="email" textContentType="emailAddress" editable={!isSubmitting} />
-      <FormInput control={control} name="password" appearance="auth" label="Password" placeholder="Enter your password" revealable secureTextEntry autoCapitalize="none"
+      <FormInput reserveErrorSpace containerStyle={{ marginBottom: 8 }} control={control} name="password" appearance="auth" label="Password" placeholder="Enter your password" revealable secureTextEntry autoCapitalize="none"
         autoCorrect={false} autoComplete="current-password" textContentType="password" editable={!isSubmitting}
         returnKeyType="go" onSubmitEditing={() => { if (configured && !isSubmitting) void submit(); }} />
       <View style={authStyles.options}>
