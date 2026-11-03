@@ -28,7 +28,7 @@ export function SignupForm() {
       resetField('password'); resetField('confirmPassword'); setSent(result.needsConfirmation);
     } catch (failure) { setError(authErrorMessage(failure)); }
   });
-  return <DesignAuthScreen fixed success={sent} title={sent ? 'Check your inbox' : 'Let’s get you settled'} eyebrow="Create your account" description={sent ? undefined : 'Start making shared living simpler in just a minute.'}>
+  return <DesignAuthScreen fixed success={sent} title={sent ? 'Check your inbox' : 'Let’s get you settled'} eyebrow="" description={sent ? undefined : 'Start making shared living simpler in just a minute.'}>
     {sent ? <View style={authStyles.successArea}>
       <View style={authStyles.successIcon}><Image source={require('../../../assets/images/auth/receipt.svg')} style={{ width: 31, height: 31 }} /></View>
       <Text accessibilityRole="header" style={authStyles.successTitle}>Check your inbox</Text>
@@ -37,13 +37,13 @@ export function SignupForm() {
       <Link href="/login" asChild><Button appearance="auth" label="Back to sign in" /></Link>
       <Button label="Use a different email" variant="secondary" onPress={() => setSent(false)} />
     </View> : <View>
-      <FormInput containerStyle={{ marginBottom: 12 }} control={control} name="name" appearance="auth" label="Display name" placeholder="Your full name" autoCapitalize="words"
+      <FormInput reserveErrorSpace containerStyle={{ marginBottom: 8 }} control={control} name="name" appearance="auth" label="Display name" placeholder="Your full name" autoCapitalize="words"
         autoComplete="name" textContentType="name" editable={!isSubmitting} />
-      <FormInput containerStyle={{ marginBottom: 12 }} control={control} name="email" appearance="auth" label="Email address" placeholder="name@example.com" autoCapitalize="none"
+      <FormInput reserveErrorSpace containerStyle={{ marginBottom: 8 }} control={control} name="email" appearance="auth" label="Email address" placeholder="name@example.com" autoCapitalize="none"
         autoCorrect={false} keyboardType="email-address" autoComplete="email" textContentType="emailAddress" editable={!isSubmitting} />
-      <FormInput containerStyle={{ marginBottom: 12 }} control={control} name="password" appearance="auth" label="Password" placeholder="At least 8 characters" revealable
+      <FormInput reserveErrorSpace containerStyle={{ marginBottom: 8 }} control={control} name="password" appearance="auth" label="Password" placeholder="At least 8 characters" revealable
         secureTextEntry autoCapitalize="none" autoCorrect={false} autoComplete="new-password" textContentType="newPassword" editable={!isSubmitting} />
-      <FormInput containerStyle={{ marginBottom: 12 }} control={control} name="confirmPassword" appearance="auth" label="Confirm password" placeholder="Enter it again" revealable secureTextEntry autoComplete="new-password"
+      <FormInput reserveErrorSpace containerStyle={{ marginBottom: 8 }} control={control} name="confirmPassword" appearance="auth" label="Confirm password" placeholder="Enter it again" revealable secureTextEntry autoComplete="new-password"
         autoCapitalize="none" autoCorrect={false} textContentType="newPassword" editable={!isSubmitting} />
       {error ? <Text accessibilityRole="alert" style={authStyles.error}>{error}</Text> : null}
       <Button appearance="auth" label="Create account" loading={isSubmitting} disabled={!configured} onPress={() => void submit()} />
