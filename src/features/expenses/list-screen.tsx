@@ -52,7 +52,7 @@ export function ExpenseListScreen() {
      const splits=query.data?.splits.filter(p=>p.expense_id===e.id)??[];
      const payerNames=members.isSuccess?(query.data?.payers.filter(p=>p.expense_id===e.id).map(p=>name(p.member_id))??[]).join(', '):'Loading…';
      return <Link key={e.id} href={{pathname:'/expenses/[id]',params:{id:e.id}}} asChild><Pressable accessibilityRole="button" accessibilityLabel={`${displayExpenseTitle(e.title)}, ${money(e.amount_minor)}, ${e.status}`} style={StyleSheet.flatten([x.row,index>0&&x.divider,e.status==='void'&&{opacity:0.72}])}>
-      <CategoryIcon category={e.category} inactive={e.status==='void'}/>
+      <CategoryIcon category={e.title.trim().toLowerCase()==='transport'?'Transport':e.category} inactive={e.status==='void'}/>
       <View style={{flex:1}}><Text style={x.title}>{displayExpenseTitle(e.title)}</Text><Text numberOfLines={1} style={x.meta}>{e.status==='void'?`Voided by ${members.data?.find(m=>m.user_id===e.voided_by)?.display_name??'Household member'}`:`Paid by ${payerNames||'Household member'} · ${splits.length} people`}</Text><Text style={x.share}>{e.status==='void'?'Balance effect removed':members.isSuccess?`Your share ${money(splits.find(p=>p.member_id===myMember?.id)?.owed_minor??0)}`:'Your share unavailable'}</Text></View>
       <View style={{alignItems:'flex-end',gap:8,flexShrink:1}}><Text style={[x.value,e.status==='void'&&{textDecorationLine:'line-through'}]}>{money(e.amount_minor)}</Text><Status status={e.status==='posted'&&e.version>1?'Revised':e.status==='posted'?'Posted':'Void'}/></View><Icon name="chevron" color={appPalette.subtleText}/>
      </Pressable></Link>;

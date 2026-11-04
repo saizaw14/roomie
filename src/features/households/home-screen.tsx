@@ -91,10 +91,11 @@ export function HomeScreen() {
 function ActivityRow({event,name,currency,category,divider}:{event:ActivityEvent;name:string;currency:string;category?:string;divider:boolean}) {
  const metadata=event.metadata!==null&&typeof event.metadata==='object'&&!Array.isArray(event.metadata)?event.metadata:{};
  const title=displayExpenseTitle(typeof metadata.title==='string'?metadata.title:'Household expense');
+ const iconCategory=title.trim().toLowerCase()==='transport'?'Transport':category??'';
  const action=event.event_type==='expense_created'?'Posted':event.event_type==='expense_edited'?'Edited':event.event_type==='expense_voided'?'Voided':'Changed';
  let amount:string|null=null;try{if(typeof metadata.amount_minor==='number'||typeof metadata.amount_minor==='string')amount=formatMoney(safeMinor(metadata.amount_minor),currency);}catch{}
  return <Link href={{pathname:'/expenses/[id]',params:{id:event.entity_id}}} asChild><Pressable accessibilityRole="button" accessibilityLabel={`${title}, ${action} by ${name}`} style={StyleSheet.flatten([s.activityRow,!divider&&{borderBottomWidth:0}])}>
-  <CategoryIcon category={category??''} inactive={action==='Voided'}/><View style={{flex:1}}><Text style={s.bold}>{title}</Text><Text style={s.small}>{action} by {name}</Text><Text style={[s.small,{fontSize:10}]}>{new Date(event.created_at).toLocaleString()}</Text></View>{amount?<Text style={s.bold}>{amount}</Text>:null}
+  <CategoryIcon category={iconCategory} inactive={action==='Voided'}/><View style={{flex:1}}><Text style={s.bold}>{title}</Text><Text style={s.small}>{action} by {name}</Text><Text style={[s.small,{fontSize:10}]}>{new Date(event.created_at).toLocaleString()}</Text></View>{amount?<Text style={s.bold}>{amount}</Text>:null}
  </Pressable></Link>;
 }
 
