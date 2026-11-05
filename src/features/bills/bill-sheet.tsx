@@ -8,7 +8,9 @@ import { requireSupabase } from '@/lib/supabase';
 import { HouseholdSheet } from '@/features/households/household-sheet';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Choice,CategoryChoice,Icon,Row } from '@/features/expenses/ui';
+import { Icon,Row } from '@/features/expenses/ui';
+import { categoryIconName } from '@/features/expenses/category-icons';
+import { categoryColor } from '@/theme/category-colors';
 import { DateRangeCalendar } from '@/features/expenses/date-range-calendar';
 import { categories,decimal,localToday,money,parseMinor,validDate } from '@/features/expenses/domain';
 import { DashboardIcon } from '@/features/dashboard/components';
@@ -22,7 +24,7 @@ export function BillSheet({bill,house,members,owner,onClose}:{bill:Bill|null;hou
  const [variable,setVariable]=useState(bill?.amount_minor==null);const [amount,setAmount]=useState(bill?.amount_minor!=null?decimal(bill.amount_minor,house.currency):'');
  const [frequency,setFrequency]=useState<'weekly'|'monthly'>(bill?.frequency??'monthly');const [due,setDue]=useState(bill?.next_due_date??localToday());
  const [paidDate,setPaidDate]=useState(localToday());const [payer,setPayer]=useState(bill?.payer_id??'');const [participants,setParticipants]=useState<string[]>(bill?.participants??active.map(m=>m.id));
- const [picker,setPicker]=useState<'due'|'paid'|'payer'|'participants'|null>(null);const [error,setError]=useState('');const [result,setResult]=useState<{expense?:string}|null>(null);
+ const [picker,setPicker]=useState<'category'|'due'|'paid'|'payer'|'participants'|null>(null);const [error,setError]=useState('');const [result,setResult]=useState<{expense?:string}|null>(null);
  const [request]=useState(()=>`bill-${Date.now()}-${Math.random().toString(36).slice(2)}`);
  const [locked,setLocked]=useState(false);
  const refresh=async()=>{await Promise.all(['bills','expenses','settlements','activity'].map(key=>client.invalidateQueries({queryKey:[key]})));};
@@ -47,7 +49,10 @@ export function BillSheet({bill,house,members,owner,onClose}:{bill:Bill|null;hou
     <Input appearance="auth" label="Bill name" placeholder="e.g. Electricity" value={title} onChangeText={setTitle} maxLength={120} editable={!locked}/>
     <View style={s.segmented}>{[true,false].map(value=><Pressable key={String(value)} accessibilityRole="button" accessibilityState={{selected:variable===value}} disabled={locked} onPress={()=>setVariable(value)} style={[s.segment,variable===value&&s.selected]}><Text style={[s.segmentText,variable===value&&s.selectedText]}>{value?'Variable amount':'Fixed amount'}</Text></Pressable>)}</View>
     {variable?<View style={s.info}><Icon name="bolt" color={appPalette.info}/><Text style={s.infoText}>You’ll enter the real amount each time this bill is posted.</Text></View>:<Input appearance="auth" label={`Amount (${house.currency})`} keyboardType="decimal-pad" value={amount} onChangeText={setAmount} editable={!locked} placeholder="0"/>}
-    <Text style={s.label}>Category</Text><View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>{categories.map(value=><CategoryChoice key={value} label={value} selected={category===value} disabled={locked} onPress={()=>setCategory(value)}/>)}</View>
+    <Pressable accessibilityRole="button" accessibilityLabel={`Category, ${category}`} accessibilityState={{expanded:picker==='category',disabled:locked}} disabled={locked} onPress={()=>setPicker(picker==='category'?null:'category')} style={s.select}>
+     <View style={s.selectCopy}><Text style={s.label}>Category</Text><View style={{flexDirection:'row',alignItems:'center',gap:10}}><Icon name={categoryIconName(category)} color={categoryColor(category).foreground}/><Text style={s.bold}>{category}</Text></View></View><View style={{transform:[{rotate:picker==='category'?'-90deg':'90deg'}]}}><DashboardIcon name="chevron"/></View>
+    </Pressable>
+    {picker==='category'?<View style={{borderWidth:1,borderColor:appPalette.border,borderRadius:14,overflow:'hidden'}}>{categories.map((value,index)=><Pressable key={value} accessibilityRole="radio" accessibilityState={{checked:category===value,disabled:locked}} disabled={locked} onPress={()=>{setCategory(value);setPicker(null);}} style={{minHeight:50,paddingHorizontal:16,paddingVertical:12,flexDirection:'row',alignItems:'center',gap:10,borderTopWidth:index>0?1:0,borderColor:appPalette.border,backgroundColor:category===value?categoryColor(value).background:appPalette.surface}}><Icon name={categoryIconName(value)} color={categoryColor(value).foreground}/><Text style={[s.bold,{flex:1}]}>{value}</Text>{category===value?<Icon name="check" color={categoryColor(value).foreground}/>:null}</Pressable>)}</View>:null}
     <Text style={s.label}>Frequency</Text><View style={s.segmented}>{(['weekly','monthly'] as const).map(value=><Pressable key={value} accessibilityRole="button" accessibilityState={{selected:frequency===value}} disabled={locked} onPress={()=>setFrequency(value)} style={[s.segment,frequency===value&&s.selected]}><Text style={[s.segmentText,frequency===value&&s.selectedText]}>{value==='weekly'?'Weekly':'Monthly'}</Text></Pressable>)}</View>
     <Select label="Next due" value={dateLabel(due)} disabled={locked} onPress={()=>setPicker(picker==='due'?null:'due')}/>
     {picker==='due'?<DateRangeCalendar single start={due} end={due} onChange={range=>{setDue(range.start);setPicker(null);}}/>:null}
@@ -58,10 +63,10 @@ export function BillSheet({bill,house,members,owner,onClose}:{bill:Bill|null;hou
     <Select label="Payment date" value={dateLabel(paidDate)} disabled={locked||!bill.active} onPress={()=>setPicker(picker==='paid'?null:'paid')}/>
     {picker==='paid'?<DateRangeCalendar single start={paidDate} end={paidDate} onChange={range=>{setPaidDate(range.start);setPicker(null);}}/>:null}
    </>}
-   <Select label="Paid by" value={payer?name(payer):'Choose a payer'} disabled={locked} onPress={()=>setPicker(picker==='payer'?null:'payer')}/>
-   {picker==='payer'?<View style={s.choices}>{active.map(m=><Choice key={m.id} label={m.display_name} selected={payer===m.id} disabled={locked} onPress={()=>{setPayer(m.id);setPicker(null);}}/>)}</View>:null}
-   <Select label="Participants" value={`${participants.length} ${participants.length===1?'person':'people'} · Equal split`} disabled={locked} onPress={()=>setPicker(picker==='participants'?null:'participants')}/>
-   {picker==='participants'?<View style={s.choices}>{members.map(m=><Choice key={m.id} label={`${m.display_name}${m.status==='left'?' (left household)':''}`} selected={participants.includes(m.id)} disabled={locked} onPress={()=>setParticipants(ids=>ids.includes(m.id)?ids.filter(id=>id!==m.id):m.status==='active'?[...ids,m.id]:ids)}/>)}</View>:null}
+   <Select label="Paid by" expanded={picker==='payer'} value={payer?name(payer):'Choose a payer'} disabled={locked} onPress={()=>setPicker(picker==='payer'?null:'payer')}/>
+   {picker==='payer'?<View style={s.dropdown}>{active.map((m,index)=><Pressable key={m.id} accessibilityRole="radio" accessibilityState={{checked:payer===m.id,disabled:locked}} disabled={locked} onPress={()=>{setPayer(m.id);setPicker(null);}} style={[s.dropdownOption,index>0&&s.dropdownDivider,payer===m.id&&s.dropdownSelected]}><Text style={[s.bold,{flex:1}]}>{m.display_name}</Text>{payer===m.id?<Icon name="check" color={appPalette.primary}/>:null}</Pressable>)}</View>:null}
+   <Select label="Participants" expanded={picker==='participants'} value={`${participants.length} ${participants.length===1?'person':'people'} · Equal split`} disabled={locked} onPress={()=>setPicker(picker==='participants'?null:'participants')}/>
+   {picker==='participants'?<View style={s.dropdown}>{members.map((m,index)=><Pressable key={m.id} accessibilityRole="checkbox" accessibilityState={{checked:participants.includes(m.id),disabled:locked||(m.status!=='active'&&!participants.includes(m.id))}} disabled={locked||(m.status!=='active'&&!participants.includes(m.id))} onPress={()=>setParticipants(ids=>ids.includes(m.id)?ids.filter(id=>id!==m.id):m.status==='active'?[...ids,m.id]:ids)} style={[s.dropdownOption,index>0&&s.dropdownDivider,participants.includes(m.id)&&s.dropdownSelected]}><Text style={[s.bold,{flex:1}]}>{m.display_name}{m.status==='left'?' (left household)':''}</Text>{participants.includes(m.id)?<Icon name="check" color={appPalette.primary}/>:null}</Pressable>)}</View>:null}
    {bill?<View><Row label="Paid by" value={payer?name(payer):'Choose a payer'}/><Row label="Participants" value={`${participants.length} people`}/><Row label="Split" value="Equal"/>{preview!==null&&participants.length?<Row label="Estimated share" value={`${money(Math.floor(preview/participants.length),house.currency)}${preview%participants.length?' + rounding remainder':''}`}/>:null}</View>:null}
    <Text style={s.note}>{bill?'Only post a payment that has actually been made. Posting creates an expense and updates balances.':'Reminders have no balance effect. Monthly dates use the last day of shorter months and retain the original day for later months.'}</Text>
    {!bill||bill.active?<Button appearance="auth" label={locked?'Retry same request':bill?'Review & post expense':'Create recurring bill'} loading={save.isPending} disabled={pause.isPending||(!bill&&!owner)} onPress={()=>{setError('');save.mutate();}}/>:null}
@@ -70,4 +75,4 @@ export function BillSheet({bill,house,members,owner,onClose}:{bill:Bill|null;hou
   </>}
  </HouseholdSheet></Modal>;
 }
-function Select({label,value,disabled,onPress}:{label:string;value:string;disabled:boolean;onPress:()=>void}){return <Pressable accessibilityRole="button" disabled={disabled} onPress={onPress} style={s.select}><View style={s.selectCopy}><Text style={s.label}>{label}</Text><Text style={s.bold}>{value}</Text></View><DashboardIcon name="chevron"/></Pressable>;}
+function Select({label,value,disabled,onPress,expanded}:{label:string;value:string;disabled:boolean;onPress:()=>void;expanded?:boolean}){return <Pressable accessibilityRole="button" accessibilityState={{disabled,...(expanded===undefined?{}:{expanded})}} disabled={disabled} onPress={onPress} style={s.select}><View style={s.selectCopy}><Text style={s.label}>{label}</Text><Text style={s.bold}>{value}</Text></View><View style={expanded===undefined?undefined:{transform:[{rotate:expanded?'-90deg':'90deg'}]}}><DashboardIcon name="chevron"/></View></Pressable>;}
