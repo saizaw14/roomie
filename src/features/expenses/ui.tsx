@@ -35,7 +35,7 @@ export function CategoryIcon({category,inactive=false}:{category:string;inactive
  return <View style={{width:42,height:42,borderRadius:13,alignItems:'center',justifyContent:'center',backgroundColor:inactive?appPalette.neutralSoft:tone.background}}><Icon name={categoryIconName(category)} color={inactive?c.muted:tone.foreground}/></View>;
 }
 export function Avatar({name}:{name:string}) {return <View style={s.avatar}><Text style={s.avatarText}>{name.split(' ').slice(0,2).map(n=>n[0]).join('').toUpperCase()}</Text></View>;}
-export function Status({status}:{status:string}) {return <Text style={[s.badge,status.toLowerCase()==='void'?s.voidBadge:status.toLowerCase()==='posted'?s.postedBadge:null]}>{status}</Text>;}
+export function Status({status}:{status:string}) {return <Text style={[s.badge,['void','cancelled'].includes(status.toLowerCase())?s.voidBadge:status.toLowerCase()==='posted'?s.postedBadge:null]}>{status.toLowerCase()==='void'?'Cancelled':status}</Text>;}
 export function Row({label,value}:{label:string;value:string}) {return <View style={s.row}><Text style={s.small}>{label}</Text><Text style={[s.bold,{flexShrink:1,textAlign:'right'}]}>{value}</Text></View>;}
 export const s=StyleSheet.create({
  canvas:{flex:1,backgroundColor:c.canvas},safe:{flex:1,width:'100%',maxWidth:430,alignSelf:'center',backgroundColor:appPalette.background},content:{padding:20,paddingBottom:32,gap:14},header:{backgroundColor:c.white,minHeight:69,paddingHorizontal:20,paddingVertical:13,flexDirection:'row',alignItems:'center',gap:12,borderBottomWidth:1,borderColor:c.line},handle:{width:38,height:4,borderRadius:4,backgroundColor:appPalette.handle,alignSelf:'center',marginVertical:9},
