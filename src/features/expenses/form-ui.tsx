@@ -5,12 +5,13 @@ import { Pressable } from '@/components/ui/pressable';
 import { Image } from 'expo-image';
 import { HouseholdSheet } from '@/features/households/household-sheet';
 import { authColors as c,authFonts as f } from '@/theme/auth-tokens';
+import { DashboardIcon } from '@/features/dashboard/components';
 import { icons } from './ui';
 
 export function ExpenseFormSheet({title,subtitle='',busy=false,children}:PropsWithChildren<{title:string;subtitle?:string;busy?:boolean}>){return <HouseholdSheet title={title} subtitle={subtitle} busy={busy}>{children}</HouseholdSheet>;}
 export function SelectField({label,value,leading,onPress,expanded=false,disabled=false}:{label:string;value:string;leading?:ReactNode;onPress:()=>void;expanded?:boolean;disabled?:boolean}){
  return <Pressable accessibilityRole="button" accessibilityLabel={`${label}, ${value}`} accessibilityState={{expanded,disabled}} disabled={disabled} onPress={onPress} style={x.select}>
-  <View style={x.selectCopy}><Text style={x.label}>{label}</Text><View style={x.selectValue}>{leading}<Text style={x.value}>{value}</Text></View></View><Image source={icons.chevron} style={x.chevron} tintColor={c.muted} contentFit="contain"/>
+  <View style={x.selectCopy}><Text style={x.label}>{label}</Text><View style={x.selectValue}>{leading}<Text style={x.value}>{value}</Text></View></View>{label==='Date'?<DashboardIcon name="calendar"/>:<Image source={icons.chevron} style={x.chevron} tintColor={c.muted} contentFit="contain"/>}
  </Pressable>;
 }
 const tones=[{backgroundColor:c.soft,color:c.primary},{backgroundColor:appPalette.infoSoft,color:appPalette.info},{backgroundColor:appPalette.warningSoft,color:appPalette.warning},{backgroundColor:appPalette.lavenderSoft,color:appPalette.lavender}];
