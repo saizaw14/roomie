@@ -11,7 +11,7 @@ import { useHouseholds } from '@/features/households/use-households';
 import { HouseholdEmptyState } from '@/features/households/household-empty-state';
 import { householdError } from '@/features/households/validation';
 import { useExpenseMembers } from '@/features/expenses/hooks';
-import { localToday,money } from '@/features/expenses/domain';
+import { splitExpense, localToday,money } from '@/features/expenses/domain';
 import { CategoryIcon } from '@/features/expenses/ui';
 import { NotificationBell } from '@/features/notifications/notifications';
 import { DashboardIcon,styles as d } from '@/features/dashboard/components';
@@ -46,8 +46,9 @@ export function BillsDashboard(){
 }
 function BillCard({bill,today,currency,payer,ownMember,disabled,onPress}:{bill:Bill;today:string;currency:string;payer:string;ownMember?:string;disabled:boolean;onPress:()=>void}){
  const attention=bill.active&&bill.next_due_date<=today;const overdue=bill.active&&bill.next_due_date<today;const variable=bill.amount_minor===null;
- const index=ownMember?bill.participants.indexOf(ownMember):-1;
- const share=bill.amount_minor===null?null:index<0?0:Math.floor(bill.amount_minor/bill.participants.length)+(index<bill.amount_minor%bill.participants.length?1:0);
+ const allocation=bill.allocations.map(a=>({member_id:a.member_id,value:a.value}));
+ let share:number|null=null;
+ if(bill.amount_minor!==null){try{share=splitExpense(bill.amount_minor,bill.split_method==='single'?'equal':bill.split_method,bill.split_method==='equal'||bill.split_method==='single'?bill.participants.map(member_id=>({member_id})):allocation).find(a=>a.member_id===ownMember)?.owed_minor??0;}catch{share=null;}}
  return <Pressable accessibilityRole="button" accessibilityLabel={`${bill.title}, ${bill.active?dueLabel(bill.next_due_date,today):'paused'}. Open bill details.`} disabled={disabled} onPress={onPress} style={({pressed})=>[s.card,overdue&&s.overdue,!bill.active&&s.paused,pressed&&{opacity:0.8}]}>
   <View style={s.head}><CategoryIcon category={bill.category} inactive={!bill.active}/><Text style={[s.badge,overdue&&s.errorBadge,!bill.active&&s.neutralBadge]}>{bill.active?dueLabel(bill.next_due_date,today):'Paused'}</Text></View>
   <Text style={s.name}>{bill.title}</Text><Text style={s.detail}>{!bill.active?'No future reminders':variable?`Variable amount · ${bill.frequency==='monthly'?'Monthly':'Weekly'}`:`Fixed · Paid by ${payer} · ${bill.participants.length} people`}</Text>
