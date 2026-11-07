@@ -213,3 +213,7 @@ User reported the generic account-request error during sign-in. Read-only hosted
 ## Category icon consistency — 2026-10-28
 
 Centralized category symbols across cards, filters, selectors, bill cards and Home activity/upcoming: shopping bag for Groceries, lightning for Utilities, building for Rent, car for Transport, grid for Other. Added local 20px transport/grid SVGs matching the existing stroke style. Paused/voided categories retain their symbol with neutral coloring. Icons follow the stored category; expense titles are not used to rewrite classification. No SQL/data changes. Lint/typecheck and all 75 tests pass; web export verified.
+
+## 2026-11-07 — Recurring bill split options
+
+Added equal, exact, percentage and one-person-covering options to bill creation and occurrence review. The new bill_split_options migration stores template allocations, validates members and totals, and posts through the existing transactional expense engine. Bill share previews use the same rounding calculation. Existing templates and legacy retries remain compatible. Dashboard SQL fallback: `docs/supabase-dashboard-bill-splits.sql`; setup: `docs/bill-splits-setup.md`. Hosted application remains pending.

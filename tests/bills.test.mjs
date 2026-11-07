@@ -11,6 +11,8 @@ test('recurring bills enforce authorization, date anchors, no reminder balance e
  for(const file of ['20261008000100_profiles','20261009000100_households','20261012000100_expenses','20261015000100_household_currencies','20261019000100_settlements'])await db.exec(await readFile(new URL('../supabase/migrations/'+file+'.sql',import.meta.url),'utf8'));
  const fallback=await readFile(new URL('../docs/supabase-dashboard-bills.sql',import.meta.url),'utf8');await db.exec(fallback);
  const source=await readFile(new URL('../supabase/migrations/20261023000100_recurring_bills.sql',import.meta.url),'utf8');assert.equal(fallback.split('$roomie_bills$')[1].trim(),source.slice(6,source.lastIndexOf('commit;')).trim());
+ const splitFallback=await readFile(new URL('../docs/supabase-dashboard-bill-splits.sql',import.meta.url),'utf8');await db.exec(splitFallback);
+ const splitSource=await readFile(new URL('../supabase/migrations/20261107000100_bill_split_options.sql',import.meta.url),'utf8');assert.equal(splitFallback.split('$roomie_bill_splits$')[1].trim(),splitSource.slice(6,splitSource.lastIndexOf('commit;')).trim());
  const users=Array.from({length:3},(_,i)=>`00000000-0000-4000-8000-00000000000${i+1}`);
  for(const id of users)await db.query('insert into auth.users values($1,$2)',[id,{display_name:id.slice(-1)}]);
  const as=(user,sql,args=[],role='authenticated')=>db.transaction(async tx=>{await tx.exec(`set local role ${role}`);await tx.query("select set_config('request.jwt.claim.sub',$1,true)",[user]);return tx.query(sql,args);});
@@ -22,6 +24,7 @@ test('recurring bills enforce authorization, date anchors, no reminder balance e
  await assert.rejects(create('unauthorized',10001,'monthly','2024-01-31',users[1]));await assert.rejects(create('outsider',10001,'monthly','2024-01-31',users[2]));
  await assert.rejects(create('bad',0));await assert.rejects(create('duplicate-participant',10,'monthly','2024-01-31',users[0],[payer,payer]));
  const id=(await create()).rows[0].id;assert.equal((await create()).rows[0].id,id);await assert.rejects(create('rent',10002));
+ await db.query("update public.recurring_expense_templates set request_payload=request_payload-'method'-'allocation' where id=$1",[id]);assert.equal((await create()).rows[0].id,id);
  const dashboard=async user=>(await as(user,'select public.roomie_bill_dashboard($1) data',[house])).rows[0].data;
  assert.equal((await dashboard(users[1]))[0].id,id);await assert.rejects(dashboard(users[2]));await assert.rejects(as('', 'select public.roomie_bill_dashboard($1)',[house],'anon'));
  assert.equal((await as(users[2],'select * from public.recurring_expense_templates')).rows.length,0);
@@ -32,6 +35,7 @@ test('recurring bills enforce authorization, date anchors, no reminder balance e
  await assert.rejects(post('2024-01-31',10001,users[2]));await assert.rejects(post('2024-01-30'));
  await assert.rejects(post('2024-01-31',10001,users[1],participants,'2100-01-01'));
  const expense=(await post()).rows[0].id;assert.equal((await post()).rows[0].id,expense);assert.equal((await post('2024-01-31',10001,users[0])).rows[0].id,expense);await assert.rejects(post('2024-01-31',10002));
+ await db.query("update public.recurring_bill_occurrences set request_payload=request_payload-'method'-'allocation' where expense_id=$1",[expense]);assert.equal((await post()).rows[0].id,expense);
  assert.equal((await db.query('select count(*)::integer n from public.expenses')).rows[0].n,1);assert.equal(await balance(),-(5000+(rows[1].id<rows[0].id?1:0)));
  assert.equal((await dashboard(users[0]))[0].next_due_date,'2024-02-29');await post('2024-02-29');assert.equal((await dashboard(users[0]))[0].next_due_date,'2024-03-31');
  assert.equal((await db.query('select currency from public.expenses limit 1')).rows[0].currency,'JPY');
@@ -45,6 +49,32 @@ test('recurring bills enforce authorization, date anchors, no reminder balance e
  await assert.rejects(as(users[0],'select public.roomie_set_bill_active($1,true,$2)',[id,current.version]));
  await as(users[0],'select public.roomie_set_bill_active($1,true,$2)',[id,current.version+1]);
  assert.equal((await dashboard(users[0])).find(b=>b.id===id).next_due_date,'2024-03-31');
+ // All split methods use the expense engine, preserving currency precision and retry safety.
+ const customCreate=(key,method,values,amount=101,ids=participants,user=users[0])=>as(user,'select public.roomie_create_bill($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) id',[house,'Shared bill','Utilities',amount,'weekly','2024-01-01',payer,ids,key,method,values]);
+ const exact=participants.map((member_id,i)=>({member_id,value:i===0?60:41}));
+ const percentages=participants.map((member_id,i)=>({member_id,value:i===0?6000:4000}));
+ for(const [method,allocation,ids] of [['exact',exact,participants],['percentage',percentages,participants],['single',[],[payer]]]){
+  const billId=(await customCreate(method,method,allocation,101,ids)).rows[0].id;
+  assert.equal((await customCreate(method,method,allocation,101,ids)).rows[0].id,billId);
+  const posted=(await as(users[1],'select public.roomie_post_bill($1,$2,$3,$4,$5,$6) id',[billId,'2024-01-01',101,'2024-01-01',payer,ids])).rows[0].id;
+  assert.equal((await as(users[1],'select public.roomie_post_bill($1,$2,$3,$4,$5,$6) id',[billId,'2024-01-01',101,'2024-01-01',payer,ids])).rows[0].id,posted);
+  const actual=(await db.query('select member_id,owed_minor::text n from public.expense_splits where expense_id=$1',[posted])).rows;
+  assert.equal(actual.reduce((sum,a)=>sum+Number(a.n),0),101);
+  if(method==='single'){assert.equal(actual.length,1);assert.equal(actual[0].member_id,payer);}
+  else assert.equal(Number(actual.find(a=>a.member_id===payer).n),method==='exact'?60:61);
+  assert.equal((await dashboard(users[0])).find(b=>b.id===billId).split_method,method);
+ }
+ await assert.rejects(customCreate('bad-exact','exact',exact,102));
+ await assert.rejects(customCreate('bad-percentage','percentage',exact));
+ await assert.rejects(customCreate('bad-single','single',[],101));
+ await assert.rejects(customCreate('bad-members','exact',[exact[0],exact[0]]));
+ await assert.rejects(customCreate('member-create','percentage',percentages,101,participants,users[1]));
+ await assert.rejects(customCreate('exact','percentage',percentages));
+ const variableExact=(await customCreate('variable-exact','exact',exact,null)).rows[0].id;
+ await assert.rejects(as(users[1],'select public.roomie_post_bill($1,$2,$3,$4,$5,$6)',[variableExact,'2024-01-01',200,'2024-01-01',payer,participants]));
+ const changed=participants.map((member_id)=>({member_id,value:100}));
+ await as(users[1],'select public.roomie_post_bill($1,$2,$3,$4,$5,$6,$7,$8)',[variableExact,'2024-01-01',200,'2024-01-01',payer,participants,'exact',changed]);
+ await assert.rejects(as(users[1],'select public.roomie_post_bill($1,$2,$3,$4,$5,$6,$7,$8)',[variableExact,'2024-01-01',200,'2024-01-01',payer,participants,'percentage',percentages]));
  await db.query("update public.household_members set status='left',left_at=now() where id=$1",[rows[1].id]);
  await assert.rejects(post('2024-03-31',10001,users[0]));await assert.rejects(dashboard(users[1]));
  assert.equal((await db.query("select roomie_private.next_bill_date(date '2025-01-31','monthly',31)::text d")).rows[0].d,'2025-02-28');

@@ -5,7 +5,7 @@ import { requireSupabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth-context';
 import { useSharedRefresh } from '@/hooks/use-shared-refresh';
 import { safeMinor } from '@/features/expenses/domain';
-const billSchema=z.array(z.object({id:z.string().uuid(),household_id:z.string().uuid(),title:z.string(),category:z.string(),amount_minor:z.string().nullable().transform(value=>value===null?null:safeMinor(value)),frequency:z.enum(['weekly','monthly']),next_due_date:z.string(),payer_id:z.string().uuid(),active:z.boolean(),version:z.number().int(),participants:z.array(z.string().uuid())}));
+const billSchema=z.array(z.object({id:z.string().uuid(),household_id:z.string().uuid(),title:z.string(),category:z.string(),amount_minor:z.string().nullable().transform(value=>value===null?null:safeMinor(value)),frequency:z.enum(['weekly','monthly']),next_due_date:z.string(),payer_id:z.string().uuid(),active:z.boolean(),version:z.number().int(),participants:z.array(z.string().uuid()),split_method:z.enum(['equal','exact','percentage','single']).default('equal'),allocations:z.array(z.object({member_id:z.string().uuid(),value:z.number().int().nonnegative().optional()})).default([])}));
 export type Bill=z.infer<typeof billSchema>[number];
 export function useBills(house:string){
  const {session}=useAuth();const enabled=!!session&&!!house;
@@ -14,10 +14,11 @@ export function useBills(house:string){
 }
 export function billError(error:unknown){
  const code=typeof error==='object'&&error!==null&&'code' in error?String(error.code):'';
- if(['42P01','PGRST202','PGRST205','42883'].includes(code))return 'Bill setup is missing. Apply docs/supabase-dashboard-bills.sql in Supabase, then retry.';
+ if(['PGRST202','42883'].includes(code))return 'Bill split setup is missing. Apply docs/supabase-dashboard-bill-splits.sql in Supabase, then retry.';
+ if(['42P01','PGRST205'].includes(code))return 'Bill setup is missing. Apply docs/supabase-dashboard-bills.sql in Supabase, then retry.';
  if(code==='42501')return 'You need active household membership. Only the owner can manage recurring bills.';
  if(code==='40001')return 'This bill changed. Close it and refresh before trying again.';
- if(code==='22023')return 'Check the amount, payment date and active members. An occurrence can only be posted once.';
+ if(code==='22023')return 'Check the amount, date, active members and split totals. An occurrence can only be posted once.';
  return error instanceof Error?error.message:'Could not save the bill. Check your connection and try again.';
 }
 export function dueLabel(date:string,today:string){
