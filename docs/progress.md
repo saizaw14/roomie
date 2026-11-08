@@ -217,3 +217,9 @@ Centralized category symbols across cards, filters, selectors, bill cards and Ho
 ## 2026-11-07 — Recurring bill split options
 
 Added equal, exact, percentage and one-person-covering options to bill creation and occurrence review. The new bill_split_options migration stores template allocations, validates members and totals, and posts through the existing transactional expense engine. Bill share previews use the same rounding calculation. Existing templates and legacy retries remain compatible. Dashboard SQL fallback: `docs/supabase-dashboard-bill-splits.sql`; setup: `docs/bill-splits-setup.md`. Hosted application remains pending.
+
+## 2026-11-08 — Expo SDK 58
+
+Upgraded to Expo 58.0.23, React Native 0.88.1 and React 19.3.0 with SDK-compatible Expo modules, Router, Reanimated, gesture handler, worklets and React types. Updated refs to React Native instance types, nullable color-scheme/AppState handling, and awaited the now-asynchronous QR file write. Native folders remain generated rather than checked in.
+
+Validation: Expo compatibility check passes; Expo Doctor 20/20; lint and typecheck pass; all 75 tests pass; iOS, Android and static web exports pass. Restart the development server with `npx expo start --clear`. Custom native development builds must be rebuilt for SDK 58; physical-device runtime verification remains pending.
