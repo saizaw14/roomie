@@ -1,6 +1,6 @@
 import { useRef,useState } from 'react';
 import { Image } from 'expo-image';
-import {ScrollView,StyleSheet,Text,TextInput,View } from 'react-native';
+import {ScrollView,StyleSheet,Text,TextInput,View,type TextInputInstance,type ScrollViewInstance } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
 import { currencies,currencyInfo } from '@/utils/currencies';
 import { authColors as c,authFonts as f } from '@/theme/auth-tokens';
@@ -8,8 +8,8 @@ import { authColors as c,authFonts as f } from '@/theme/auth-tokens';
 export function CurrencySelector({value,onChange,disabled}:{value:string;onChange:(value:string)=>void;disabled:boolean}) {
  const [open,setOpen]=useState(false);
  const [search,setSearch]=useState('');
- const list=useRef<ScrollView>(null);
- const input=useRef<TextInput>(null);
+ const list=useRef<ScrollViewInstance>(null);
+ const input=useRef<TextInputInstance>(null);
  const selected=value?currencyInfo(value):null;
  const query=search.trim().toLowerCase();
  const rank=(currency:typeof currencies[number])=>currency.code.toLowerCase()===query?0:currency.code.toLowerCase().startsWith(query)?1:currency.name.toLowerCase().startsWith(query)?2:3;

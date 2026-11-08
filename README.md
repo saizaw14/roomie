@@ -20,7 +20,7 @@ npm run typecheck
 npm test
 ```
 
-This project uses npm / package-lock.json, Expo SDK 57, React Native 0.86, React 19, TypeScript, and Expo Router. Install future dependencies with `npx expo install <package>` after consulting matching SDK docs.
+This project uses npm / package-lock.json, Expo SDK 58, React Native 0.88, React 19.3, TypeScript, and Expo Router. Install future dependencies with `npx expo install <package>` after consulting matching SDK docs.
 
 ## Organization
 

@@ -63,7 +63,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     if (!supabase || Platform.OS === 'web') return;
     const client = supabase;
-    const refresh = (state: string) => {
+    const refresh = (state: string | null | undefined) => {
       if (state === 'active') client.auth.startAutoRefresh(); else client.auth.stopAutoRefresh();
     };
     refresh(AppState.currentState);

@@ -6,5 +6,5 @@ export async function savePaymentQr(url:string){
  const bytes=new Uint8Array(await response.arrayBuffer());const type=qrImageType(bytes);const filename=`roomie-payment-qr.${type==='image/png'?'png':'jpg'}`;
 
  const permission=await requestPermissionsAsync(true,['photo']);if(!permission.granted)throw new Error('Allow saving photos to save the QR to your gallery.');
- const file=new File(Paths.cache,`${Date.now()}-${filename}`);try{file.create({overwrite:true});file.write(bytes);await Asset.create(file.uri);}finally{if(file.exists)file.delete();}
+ const file=new File(Paths.cache,`${Date.now()}-${filename}`);try{file.create({overwrite:true});await file.write(bytes);await Asset.create(file.uri);}finally{if(file.exists)file.delete();}
 }

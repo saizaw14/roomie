@@ -1,10 +1,10 @@
 import { Image } from 'expo-image';
 import { useState, useId, type Ref } from 'react';
-import { StyleSheet, Text, TextInput, View, type TextInputProps, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, Text, TextInput, View, type TextInputInstance, type TextInputProps, type StyleProp, type ViewStyle } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
 import { authColors, authFonts } from '@/theme/auth-tokens';
 import { colors, radius, spacing } from '@/theme/tokens';
-type Props = TextInputProps & { label: string; prefix?: string; containerStyle?: StyleProp<ViewStyle>; appearance?: 'default' | 'auth'; revealable?: boolean; reserveErrorSpace?: boolean; error?: string; hint?: string; ref?: Ref<TextInput> };
+type Props = TextInputProps & { label: string; prefix?: string; containerStyle?: StyleProp<ViewStyle>; appearance?: 'default' | 'auth'; revealable?: boolean; reserveErrorSpace?: boolean; error?: string; hint?: string; ref?: Ref<TextInputInstance> };
 export function Input({ label, prefix, containerStyle, appearance = 'default', revealable = false, reserveErrorSpace = false, error, hint, style, ...props }: Props) {
   const id = useId();
   const [visible, setVisible] = useState(false);
