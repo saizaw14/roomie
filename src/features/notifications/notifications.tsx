@@ -9,22 +9,20 @@ import { requireSupabase } from '@/lib/supabase';
 import { HouseholdSheet } from '@/features/households/household-sheet';
 import { DashboardIcon, styles as dashboard } from '@/features/dashboard/components';
 import { Button } from '@/components/ui/button';
-import { money, safeMinor } from '@/features/expenses/domain';
 import { authColors as c, authFonts as f } from '@/theme/auth-tokens';
 
 const schema = z.array(z.object({
-  id: z.string(), household_id: z.string(), settlement_id: z.string(),
-  created_at: z.string(), read_at: z.string().nullable(), household_name: z.string(),
-  sender_name: z.string(), amount_minor: z.string(), currency: z.string(), status: z.string(),
+ id:z.string().uuid(),household_id:z.string().uuid(),entity_id:z.string().uuid(),kind:z.enum(['payment_review','payment_confirmed','payment_rejected','expense_created','expense_edited','expense_voided','bill_due','bill_created','bill_paused','bill_resumed','member_joined','member_left','household_renamed']),
+ title:z.string(),body:z.string(),requires_action:z.boolean(),created_at:z.string(),read_at:z.string().nullable(),household_name:z.string(),
 }));
-type ReceiptNotification = z.infer<typeof schema>[number];
+type RoomieNotification=z.infer<typeof schema>[number];
 
 function useNotifications() {
   const { session } = useAuth();
   return useQuery({
-    queryKey: ['receipt-notifications', session?.user.id], enabled: !!session,
+    queryKey: ['notifications', session?.user.id], enabled: !!session,
     queryFn: async () => {
-      const { data, error } = await requireSupabase().rpc('roomie_receipt_notifications');
+      const { data, error } = await requireSupabase().rpc('roomie_notifications');
       if (error) throw error;
       return schema.parse(data);
     },
@@ -32,7 +30,7 @@ function useNotifications() {
   });
 }
 async function markRead(id: string) {
-  const { error } = await requireSupabase().rpc('roomie_read_receipt_notification', { p_id: id });
+  const { error } = await requireSupabase().rpc('roomie_read_notification', { p_id: id });
   if (error) throw error;
 }
 function notificationDate(value: string) {
@@ -57,25 +55,28 @@ export function NotificationBell() {
   </Link>;
 }
 export default function NotificationsScreen() {
+  const {session}=useAuth();const queryUser=session?.user.id;
   const query = useNotifications();
   const client = useQueryClient();
   const unread = query.data?.filter(n => !n.read_at) ?? [];
-  const refresh = () => client.invalidateQueries({ queryKey: ['receipt-notifications'] });
+  const refresh = () => client.invalidateQueries({ queryKey: ['notifications'] });
   const open = useMutation({
-    mutationFn: async (notification: ReceiptNotification) => {
+    mutationFn: async (notification: RoomieNotification) => {
       await markRead(notification.id);
       return notification;
     },
     onSuccess: notification => {
       void refresh();
-      router.replace({ pathname: '/settlements', params: {
-        household: notification.household_id, view: 'history', payment: notification.settlement_id,
-      } });
+      client.setQueryData(['household-selection', queryUser], notification.household_id);
+      if(notification.kind.startsWith('payment_'))router.replace({pathname:'/settlements',params:{household:notification.household_id,view:'history',payment:notification.entity_id}});
+      else if(notification.kind.startsWith('expense_'))router.replace({pathname:'/expenses/[id]',params:{id:notification.entity_id}});
+      else if(notification.kind.startsWith('bill_'))router.replace({pathname:'/bills',params:{household:notification.household_id,bill:notification.entity_id}});
+      else router.replace({pathname:notification.kind==='household_renamed'?'/households/settings':'/households/members',params:{id:notification.household_id}});
     },
   });
   const markAll = useMutation({
     mutationFn: async () => {
-      // Mark only the displayed unread snapshot; newly arriving receipts stay unread.
+      // Mark only the displayed unread snapshot; newly arriving alerts stay unread.
       // Small batches avoid flooding the API when an account has a large inbox.
       for (let i = 0; i < unread.length; i += 10) {
         const results = await Promise.allSettled(unread.slice(i, i + 10).map(n => markRead(n.id)));
@@ -86,8 +87,8 @@ export default function NotificationsScreen() {
   });
   const busy = open.isPending || markAll.isPending;
   const subtitle = query.isPending ? 'Checking your notifications…'
-    : query.isError ? 'Payment updates' : unread.length
-      ? `${unread.length} ${unread.length === 1 ? 'item needs' : 'items need'} attention` : 'You’re all caught up';
+    : query.isError ? 'Household updates' : unread.length
+      ? `${unread.length} unread ${unread.length===1?'update':'updates'}` : 'You’re all caught up';
   return <HouseholdSheet title="Notifications" subtitle={subtitle} busy={busy}>
     {query.isPending ? <Text style={styles.message}>Loading notifications…</Text> : null}
     {query.isError ? <View style={styles.state}>
@@ -97,9 +98,9 @@ export default function NotificationsScreen() {
     {query.isSuccess && !query.data.length ? <View style={styles.empty}>
       <View style={styles.emptyIcon}><DashboardIcon name="bell"/></View>
       <Text style={styles.emptyTitle}>You’re all caught up</Text>
-      <Text style={styles.emptyText}>When someone sends you a payment receipt, you’ll find it here.</Text>
+      <Text style={styles.emptyText}>Payment reviews, bills due, shared expense updates and household changes will appear here.</Text>
     </View> : null}
-    {open.isError || markAll.isError ? <Text accessibilityRole="alert" style={styles.error}>{open.isError ? 'Could not open this payment. Please try again.' : 'Some notifications could not be marked read. Please try again.'}</Text> : null}
+    {open.isError || markAll.isError ? <Text accessibilityRole="alert" style={styles.error}>{open.isError ? 'Could not open this update. Please try again.' : 'Some notifications could not be marked read. Please try again.'}</Text> : null}
     {query.data?.length ? <View>
       {query.data.map((notification, index) => <NotificationRow key={notification.id} notification={notification} divider={index > 0} disabled={busy} onPress={() => open.mutate(notification)}/>)}
       <Button appearance="auth" variant="secondary" label="Mark all as read" style={styles.secondary} labelStyle={styles.secondaryLabel} disabled={!unread.length || open.isPending} loading={markAll.isPending} onPress={() => markAll.mutate()}/>
@@ -107,24 +108,27 @@ export default function NotificationsScreen() {
   </HouseholdSheet>;
 }
 function NotificationRow({ notification: n, divider, disabled, onPress }: {
-  notification: ReceiptNotification; divider: boolean; disabled: boolean; onPress: () => void;
+  notification: RoomieNotification; divider: boolean; disabled: boolean; onPress: () => void;
 }) {
-  const pending = n.status === 'pending';
-  const title = pending ? `Confirm ${n.sender_name}’s payment` : `${n.sender_name}’s payment ${n.status}`;
-  const detail = `${money(safeMinor(n.amount_minor), n.currency)} · ${pending ? 'Waiting for you' : n.status === 'confirmed' ? 'Payment confirmed' : 'Payment rejected'}`;
+  const pending=n.requires_action;
+  const title=n.title;const detail=n.body;
+  const icon=n.kind.startsWith('payment_')?'wallet':n.kind.startsWith('bill_')?'calendar':n.kind.startsWith('expense_')?'receipt':'building';
   return <Pressable accessibilityRole="button" accessibilityLabel={`${title}. ${detail}. ${n.household_name}.${!n.read_at ? ' Unread.' : ''}`} disabled={disabled}
     style={({ pressed }) => [styles.row, divider && styles.divider, pressed && styles.pressed]} onPress={onPress}>
     <View style={[styles.paymentIcon, !pending && styles.resolvedIcon]}>
-      <DashboardIcon name="wallet" color={pending ? appPalette.warning : c.primary}/>
+      <DashboardIcon name={icon} color={pending ? appPalette.warning : c.primary}/>
     </View>
     <View style={styles.rowContent}>
-      <Text style={styles.title}>{title}</Text>
+      <View style={{flexDirection:'row',alignItems:'center',gap:6}}><Text style={[styles.title,{flex:1}]}>{title}</Text>{!n.read_at?<View style={styles.unreadDot}/>:null}</View>
+      {pending?<Text style={styles.actionLabel}>Action needed</Text>:null}
       <Text style={styles.detail}>{detail}</Text>
       <Text style={styles.date}>{notificationDate(n.created_at)} · {n.household_name}</Text>
     </View>
   </Pressable>;
 }
 const styles = StyleSheet.create({
+  unreadDot:{width:6,height:6,borderRadius:3,backgroundColor:appPalette.notification},
+  actionLabel:{fontFamily:f.semibold,fontSize:10,lineHeight:16,color:appPalette.warning,marginTop:4},
   bellDot: { position: 'absolute', top: 8, right: 8, width: 8, height: 8, borderRadius: 4, backgroundColor: appPalette.notification, boxShadow: '0 0 0 2px #ffffff' },
   row: { minHeight: 76, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', gap: 12 },
   divider: { borderTopWidth: 1, borderTopColor: c.line },

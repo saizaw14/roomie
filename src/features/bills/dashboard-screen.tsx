@@ -1,6 +1,6 @@
 import { palette as appPalette } from '@/theme/palette';
 import { useState } from 'react';
-import { Link } from 'expo-router';
+import { Link,useLocalSearchParams } from 'expo-router';
 import {ScrollView,Text,View } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -20,9 +20,13 @@ import { useBills,type Bill,billError,dueLabel } from './api';
 import { styles as s } from './styles';
 
 export function BillsDashboard(){
- const [loaded,fontError]=useRoomieFonts();const houses=useHouseholds();const house=houses.current;
- const bills=useBills(house?.id??'');const members=useExpenseMembers(house?.id??'');const owner=houses.membership?.role==='owner';
+ const params=useLocalSearchParams<{household?:string;bill?:string}>();
+ const [loaded,fontError]=useRoomieFonts();const houses=useHouseholds();const house=params.household?houses.houses.find(h=>h.id===params.household):houses.current;
+ const bills=useBills(house?.id??'');const members=useExpenseMembers(house?.id??'');const owner=houses.data?.memberships.find(m=>m.household_id===house?.id)?.role==='owner';
  const [sheet,setSheet]=useState<{house:string;bill:Bill|null}|null>(null);
+ const [dismissed,setDismissed]=useState<string|null>(null);
+ const linkedBill=bills.data?.find(b=>b.id===params.bill);
+ const visibleSheet=sheet??(house&&linkedBill&&dismissed!==params.bill?{house:house.id,bill:linkedBill}:null);
  const today=localToday();
  const groups=[{title:'Needs attention',rows:bills.data?.filter(b=>b.active&&b.next_due_date<=today)??[],empty:'No bills need attention right now.'},{title:'Upcoming',rows:bills.data?.filter(b=>b.active&&b.next_due_date>today)??[],empty:'No upcoming bills yet.'},{title:'Paused',rows:bills.data?.filter(b=>!b.active)??[],empty:''}];
  if(!loaded&&!fontError)return <LoadingScreen/>;
@@ -36,12 +40,12 @@ export function BillsDashboard(){
     {bills.isPending?<Text style={[s.small,{marginTop:24}]}>Loading recurring bills…</Text>:null}
     {bills.isError?<><Text accessibilityRole="alert" style={s.error}>{billError(bills.error)}</Text><Button appearance="auth" variant="secondary" style={s.secondary} labelStyle={s.secondaryText} label="Retry bills" loading={bills.isFetching} onPress={()=>void bills.refetch()}/></>:null}
     {members.isError?<><Text style={s.error}>Member details could not be loaded.</Text><Button appearance="auth" label="Retry members" onPress={()=>void members.refetch()}/></>:null}
-    {bills.isSuccess?groups.filter(group=>group.title!=='Paused'||group.rows.length).map(group=><View key={group.title}><Text accessibilityRole="header" style={s.section}>{group.title}</Text>{group.rows.length?group.rows.map(bill=><BillCard key={bill.id} bill={bill} today={today} currency={house.currency} payer={members.data?.find(m=>m.id===bill.payer_id)?.display_name??'Household member'} ownMember={houses.membership?.id} disabled={!members.isSuccess} onPress={()=>setSheet({house:house.id,bill})}/>):<Text style={s.empty}>{group.empty}{!bills.data.length?' The household owner can add a recurring bill to get started.':''}</Text>}</View>):null}
+    {bills.isSuccess?groups.filter(group=>group.title!=='Paused'||group.rows.length).map(group=><View key={group.title}><Text accessibilityRole="header" style={s.section}>{group.title}</Text>{group.rows.length?group.rows.map(bill=><BillCard key={bill.id} bill={bill} today={today} currency={house.currency} payer={members.data?.find(m=>m.id===bill.payer_id)?.display_name??'Household member'} ownMember={houses.data?.memberships.find(m=>m.household_id===house.id)?.id} disabled={!members.isSuccess} onPress={()=>setSheet({house:house.id,bill})}/>):<Text style={s.empty}>{group.empty}{!bills.data.length?' The household owner can add a recurring bill to get started.':''}</Text>}</View>):null}
     {!owner?<Text style={[s.note,{marginTop:18}]}>The household owner manages recurring bills. Any active member can review and post a paid occurrence.</Text>:null}
    </>:null}
   </ScrollView>
   <View style={d.nav}>{([{label:'Home',href:'/home',icon:'home'},{label:'Expenses',href:'/expenses',icon:'receipt'},{label:'Bills',href:'/bills',icon:'calendar'},{label:'Me',href:'/profile',icon:'user'}] as const).map(item=><Link key={item.label} href={item.href} asChild><Pressable accessibilityRole="button" accessibilityState={{selected:item.label==='Bills'}} style={d.navItem}>{item.label==='Bills'?<View style={d.indicator}/>:null}<DashboardIcon name={item.icon} color={item.label==='Bills'?appPalette.primary:appPalette.subtleText}/><Text style={[d.navLabel,item.label==='Bills'&&d.activeNav]}>{item.label}</Text></Pressable></Link>)}</View>
-  {sheet&&house&&sheet.house===house.id&&members.data?<BillSheet key={sheet.bill?.id??'new'} house={house} members={members.data} owner={owner} bill={sheet.bill} onClose={()=>setSheet(null)}/>:null}
+  {visibleSheet&&house&&visibleSheet.house===house.id&&members.data?<BillSheet key={visibleSheet.bill?.id??'new'} house={house} members={members.data} owner={owner} bill={visibleSheet.bill} onClose={()=>{setSheet(null);setDismissed(params.bill??null);}}/>:null}
  </SafeAreaView></View>;
 }
 function BillCard({bill,today,currency,payer,ownMember,disabled,onPress}:{bill:Bill;today:string;currency:string;payer:string;ownMember?:string;disabled:boolean;onPress:()=>void}){

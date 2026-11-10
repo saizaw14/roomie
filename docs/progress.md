@@ -223,3 +223,7 @@ Added equal, exact, percentage and one-person-covering options to bill creation 
 Upgraded to Expo 58.0.23, React Native 0.88.1 and React 19.3.0 with SDK-compatible Expo modules, Router, Reanimated, gesture handler, worklets and React types. Updated refs to React Native instance types, nullable color-scheme/AppState handling, and awaited the now-asynchronous QR file write. Native folders remain generated rather than checked in.
 
 Validation: Expo compatibility check passes; Expo Doctor 20/20; lint and typecheck pass; all 75 tests pass; iOS, Android and static web exports pass. Restart the development server with `npx expo start --clear`. Custom native development builds must be rebuilt for SDK 58; physical-device runtime verification remains pending.
+
+## 2026-11-10 — Unified household notification inbox
+
+Extended receipt notifications to payment decisions, affected shared-expense changes, due bills/reminder changes, membership changes and household renames. Server triggers create recipient-scoped records; inbox refresh creates due reminders once per occurrence and suppresses stale occurrences. Existing receipt read state is migrated. Action labels and destination routing distinguish payment, bill, expense and household updates. Reading does not complete the underlying action. Apply `docs/supabase-dashboard-action-notifications.sql` after receipt notifications and recurring bills; see `docs/action-notifications-setup.md`. In-app polling only; hosted migration/device verification pending.
