@@ -68,10 +68,10 @@ export default function NotificationsScreen() {
     onSuccess: notification => {
       void refresh();
       client.setQueryData(['household-selection', queryUser], notification.household_id);
-      if(notification.kind.startsWith('payment_'))router.replace({pathname:'/settlements',params:{household:notification.household_id,view:'history',payment:notification.entity_id}});
-      else if(notification.kind.startsWith('expense_'))router.replace({pathname:'/expenses/[id]',params:{id:notification.entity_id}});
-      else if(notification.kind.startsWith('bill_'))router.replace({pathname:'/bills',params:{household:notification.household_id,bill:notification.entity_id}});
-      else router.replace({pathname:notification.kind==='household_renamed'?'/households/settings':'/households/members',params:{id:notification.household_id}});
+      if(notification.kind.startsWith('payment_'))router.push({pathname:'/settlements',params:{household:notification.household_id,view:'history',payment:notification.entity_id}});
+      else if(notification.kind.startsWith('expense_'))router.push({pathname:'/expenses/[id]',params:{id:notification.entity_id}});
+      else if(notification.kind.startsWith('bill_'))router.push({pathname:'/bills',params:{household:notification.household_id,bill:notification.entity_id}});
+      else router.push({pathname:notification.kind==='household_renamed'?'/households/settings':'/households/members',params:{id:notification.household_id}});
     },
   });
   const markAll = useMutation({

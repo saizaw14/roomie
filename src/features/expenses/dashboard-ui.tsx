@@ -1,12 +1,11 @@
+import { MainNavigation } from '@/features/dashboard/main-navigation';
 import { palette as appPalette } from '@/theme/palette';
-import { Link } from 'expo-router';
 import { Modal, StyleSheet, Text, View } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { DateRangeCalendar } from './date-range-calendar';
 import { HouseholdSheet } from '@/features/households/household-sheet';
-import { DashboardIcon, styles as d } from '@/features/dashboard/components';
 import { authColors as c, authFonts as f } from '@/theme/auth-tokens';
 import { Choice, Icon, s } from './ui';
 import { validDate } from './domain';
@@ -20,7 +19,7 @@ export function ExpenseFilterSheet({value,onClose,onApply}:{value:ExpenseFilters
   <Text style={s.bold}>Status</Text><View style={s.wrap}>{['All','Posted','Void'].map(status=><Choice key={status} label={status==='Void'?'Cancelled':status} selected={draft.status===status} onPress={()=>setDraft({...draft,status})}/>)}</View><Button appearance="auth" label="Apply filters" disabled={!valid} onPress={()=>onApply(draft)}/>
  </HouseholdSheet></Modal>;
 }
-export function ExpenseNavigation() {return <View style={d.nav}><Link href="/home" asChild><Pressable accessibilityRole="button" style={d.navItem}><DashboardIcon name="home" color={appPalette.subtleText}/><Text style={d.navLabel}>Home</Text></Pressable></Link><View accessibilityRole="tab" accessibilityState={{selected:true}} style={d.navItem}><View style={d.indicator}/><DashboardIcon name="receipt"/><Text style={[d.navLabel,d.activeNav]}>Expenses</Text></View><Link href="/bills" asChild><Pressable accessibilityRole="button" style={d.navItem}><DashboardIcon name="calendar" color={appPalette.subtleText}/><Text style={d.navLabel}>Bills</Text></Pressable></Link><Link href="/profile" asChild><Pressable accessibilityRole="button" style={d.navItem}><DashboardIcon name="user" color={appPalette.subtleText}/><Text style={d.navLabel}>Me</Text></Pressable></Link></View>;}
+export function ExpenseNavigation() {return <MainNavigation active="expenses"/>;}
 export const x=StyleSheet.create({
  content:{paddingHorizontal:20,paddingTop:22,paddingBottom:100,gap:16},summary:{flexDirection:'row',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap',marginTop:3,marginBottom:6},amount:{fontFamily:f.bold,fontSize:25,lineHeight:30,letterSpacing:-0.6,color:c.ink,marginTop:4},filter:{minHeight:42,borderWidth:1,borderColor:c.line,borderRadius:12,backgroundColor:'white',flexDirection:'row',alignItems:'center',gap:6,paddingHorizontal:12},filterText:{fontFamily:f.semibold,fontSize:12,color:c.ink},chips:{gap:8,paddingHorizontal:20,paddingBottom:5},date:{fontFamily:f.bold,fontSize:17,color:c.ink,letterSpacing:-0.3,marginTop:4},group:{backgroundColor:'white',borderWidth:1,borderColor:c.line,borderRadius:17,overflow:'hidden'},row:{minHeight:92,padding:13,flexDirection:'row',alignItems:'center',gap:12},divider:{borderTopWidth:1,borderColor:c.line},icon:{width:42,height:42,borderRadius:13,alignItems:'center',justifyContent:'center'},title:{fontFamily:f.bold,fontSize:14,color:c.ink},meta:{fontFamily:f.regular,fontSize:11,lineHeight:16,color:c.muted,marginTop:4},share:{fontFamily:f.regular,fontSize:10,lineHeight:15,color:appPalette.subtleText,marginTop:5},value:{fontFamily:f.bold,fontSize:12,color:c.ink,textAlign:'right'},options:{borderWidth:1,borderColor:c.line,borderRadius:14,overflow:'hidden'},option:{minHeight:48,padding:13,flexDirection:'row',justifyContent:'space-between',backgroundColor:'white',borderBottomWidth:1,borderColor:c.line},selected:{backgroundColor:c.soft},
 });

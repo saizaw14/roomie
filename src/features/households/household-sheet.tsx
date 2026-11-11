@@ -15,11 +15,11 @@ export function HouseholdSheet({title,subtitle,busy=false,onBack,onClose,childre
  const [loaded,error]=useRoomieFonts();const {session}=useAuth();const insets=useSafeAreaInsets();const {height}=useWindowDimensions();
  const close=()=>{if(!busy){if(onClose)onClose();else closeHouseholdSheet(!!session);}};
  return <View style={s.overlay}>
-  <Pressable accessibilityRole="button" accessibilityLabel="Dismiss household sheet" disabled={busy} onPress={close} style={StyleSheet.absoluteFill}/>
+  <Pressable accessibilityRole="button" accessibilityLabel={`Close ${title.toLowerCase()}`} disabled={busy} onPress={close} style={StyleSheet.absoluteFill}/>
   <KeyboardAvoidingView pointerEvents="box-none" style={s.position} behavior={Platform.OS==='ios'?'padding':'height'}>
    <View accessibilityViewIsModal style={[s.sheet,{maxHeight:Math.max(180,height-insets.top-20)}]}>
     <View style={s.handle}/><View style={s.header}><View style={{flex:1}}><Text accessibilityRole="header" style={s.title}>{title}</Text><Text style={s.subtitle}>{subtitle}</Text></View>
-     <Pressable accessibilityRole="button" accessibilityLabel="Close household sheet" disabled={busy} onPress={close} style={s.close}><Image source={require('../../../assets/images/expenses/close.svg')} style={{width:20,height:20}} tintColor={c.ink}/></Pressable>
+     <Pressable accessibilityRole="button" accessibilityLabel={`Close ${title.toLowerCase()}`} disabled={busy} onPress={close} style={s.close}><Image source={require('../../../assets/images/expenses/close.svg')} style={{width:20,height:20}} tintColor={c.ink}/></Pressable>
     </View>
     <ScrollView keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" contentContainerStyle={[s.body,{paddingBottom:Math.max(28,insets.bottom+18)}]}>
      {onBack?<Pressable accessibilityRole="button" disabled={busy} onPress={onBack} style={s.back}><Text style={s.link}>‹ Back to households</Text></Pressable>:null}

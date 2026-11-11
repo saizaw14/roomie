@@ -227,3 +227,7 @@ Validation: Expo compatibility check passes; Expo Doctor 20/20; lint and typeche
 ## 2026-11-10 — Unified household notification inbox
 
 Extended receipt notifications to payment decisions, affected shared-expense changes, due bills/reminder changes, membership changes and household renames. Server triggers create recipient-scoped records; inbox refresh creates due reminders once per occurrence and suppresses stale occurrences. Existing receipt read state is migrated. Action labels and destination routing distinguish payment, bill, expense and household updates. Reading does not complete the underlying action. Apply `docs/supabase-dashboard-action-notifications.sql` after receipt notifications and recurring bills; see `docs/action-notifications-setup.md`. In-app polling only; hosted migration/device verification pending.
+
+## 2026-11-11 — Consistent navigation
+
+Home, Expenses, Bills and Me now share MainNavigation. Switching main destinations replaces the current dashboard without screen-slide animations or repeated tab history; tapping the active tab does nothing. Expense details now open in the shared sheet, with Close returning to the previous route and a signed-in Home fallback for direct links. Notification destinations preserve the inbox in navigation history, and linked bill sheets return there on close. Nested profile panels return to their preceding panel. Expense completion uses dismissTo for explicit Home/details destinations. No database changes. Physical-device Back/Close verification remains pending.

@@ -21,7 +21,7 @@ export function ExpenseDetailScreen() {
  const money=(value:number)=>formatMoney(value,e?.currency??'MYR');
  const allowed=e?.status==='posted'&&(e.created_by===session?.user.id||houses.data?.memberships.some(m=>m.household_id===e.household_id&&m.user_id===session?.user.id&&m.role==='owner'));
  async function confirmVoid(){setError(null);try{await mutation.mutateAsync();}catch(failure){setError(expenseError(failure));}}
- return <ExpenseScreen title="Expense details" subtitle={e?`Posted ${e.expense_date} · ${actor(e.created_by)}`:undefined} sheet>
+ return <ExpenseScreen title="Expense details" subtitle={e?`Posted ${e.expense_date} · ${actor(e.created_by)}`:undefined} sheet busy={mutation.isPending}>
   {!isExpenseId(id)?<Text style={s.error}>Invalid expense link.</Text>:query.isPending?<Text style={s.small}>Loading expense…</Text>:query.isError?<><Text accessibilityRole="alert" style={s.error}>{expenseError(query.error)}</Text><Button label="Retry" onPress={()=>void query.refetch()}/></>:null}
   {e&&query.data?<>
    <View style={{alignItems:'center',gap:8}}><CategoryIcon category={e.category} inactive={e.status==='void'}/><Status status={e.status}/><Text style={s.heading}>{e.title}</Text><Text style={s.total}>{money(e.amount_minor)}</Text><Text style={s.small}>{e.status==='void'?'This expense is cancelled and no longer counts toward spending or balances.':members.isSuccess?`Your share · ${money(query.data.splits.find(p=>members.data?.find(m=>m.id===p.member_id)?.user_id===session?.user.id)?.owed_minor??0)}`:'Your share is loading or unavailable'}</Text></View>

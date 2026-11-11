@@ -1,11 +1,11 @@
+import { MainNavigation } from '@/features/dashboard/main-navigation';
+import { HouseholdSheet } from '@/features/households/household-sheet';
 import { categoryIconName } from './category-icons';
 import { categoryColor } from '@/theme/category-colors';
-import { pressFeedback } from '@/lib/press-feedback';
 import { palette as appPalette } from '@/theme/palette';
 import type { PropsWithChildren } from 'react';
 import { useFonts } from 'expo-font';
 import { Image } from 'expo-image';
-import { Link } from 'expo-router';
 import { KeyboardAvoidingView,Platform,ScrollView,StyleSheet,Text,View } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -14,14 +14,15 @@ import { Card } from '@/components/ui/card';
 import { authColors as c,authFonts as f } from '@/theme/auth-tokens';
 export const icons={transport:require('../../../assets/images/expenses/transport.svg'),other:require('../../../assets/images/expenses/other.svg'),groceries:require('../../../assets/images/expenses/groceries.svg'),receipt:require('../../../assets/images/expenses/receipt.svg'),bolt:require('../../../assets/images/expenses/bolt.svg'),building:require('../../../assets/images/expenses/building.svg'),close:require('../../../assets/images/expenses/close.svg'),chevron:require('../../../assets/images/expenses/chevron.svg'),check:require('../../../assets/images/expenses/check.svg'),history:require('../../../assets/images/expenses/history.svg')};
 export function Icon({name,color}:{name:keyof typeof icons;color?:string}) {return <Image source={icons[name]} style={{width:20,height:20}} tintColor={color} contentFit="contain" />;}
-export function ExpenseScreen({title,subtitle,children,sheet=false}:PropsWithChildren<{title:string;subtitle?:string;sheet?:boolean}>) {
+export function ExpenseScreen({title,subtitle,children,sheet=false,busy=false}:PropsWithChildren<{title:string;subtitle?:string;sheet?:boolean;busy?:boolean}>) {
  const [loaded,error]=useFonts({RoomieInter:require('../../../assets/fonts/Inter-Regular.ttf'),RoomieInterMedium:require('../../../assets/fonts/Inter-Medium.ttf'),RoomieInterSemiBold:require('../../../assets/fonts/Inter-SemiBold.ttf'),RoomieInterBold:require('../../../assets/fonts/Inter-Bold.ttf'),RoomieInterExtraBold:require('../../../assets/fonts/Inter-ExtraBold.ttf')});
+ if(sheet)return <HouseholdSheet title={title} subtitle={subtitle??''} busy={busy}>{children}</HouseholdSheet>;
  if(!loaded&&!error) return <LoadingScreen />;
  return <View style={s.canvas}><SafeAreaView style={s.safe}><KeyboardAvoidingView style={{flex:1}} behavior={Platform.OS==='ios'?'padding':undefined}>
-  {sheet?<View style={s.handle}/>:null}<View style={s.header}><View style={{flex:1}}><Text accessibilityRole="header" style={s.heading}>{title}</Text>{subtitle?<Text style={s.small}>{subtitle}</Text>:null}</View>
-   <Link href="/expenses" asChild><Pressable accessibilityRole="button" accessibilityLabel={sheet?'Close expense':'Expense list'} style={s.iconButton}><Icon name={sheet?'close':'receipt'}/></Pressable></Link></View>
+  <View style={s.header}><View style={{flex:1}}><Text accessibilityRole="header" style={s.heading}>{title}</Text>{subtitle?<Text style={s.small}>{subtitle}</Text>:null}</View>
+  </View>
   <ScrollView keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" contentContainerStyle={s.content}>{children}</ScrollView>
-  {!sheet?<View style={s.nav}><Link href="/home" style={s.navLink} onPress={pressFeedback}>Home</Link><Link href="/expenses" style={s.navLink} onPress={pressFeedback}>Expenses</Link><Link href="/profile" style={s.navLink} onPress={pressFeedback}>Me</Link></View>:null}
+  <MainNavigation active="expenses"/>
  </KeyboardAvoidingView></SafeAreaView></View>;
 }
 export function ExpenseCard({children}:PropsWithChildren) {return <Card style={s.card}>{children}</Card>;}
