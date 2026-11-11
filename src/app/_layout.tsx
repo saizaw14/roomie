@@ -6,6 +6,7 @@ import { QueryProvider } from '@/lib/query-provider';
 import { LoadingScreen } from '@/components/ui/loading-screen';
 import { InviteIntentProvider } from '@/features/households/invite-intent';
 import { colors } from '@/theme/tokens';
+const mainScreenOptions = { animation: 'none' } as const;
 const householdSheetOptions = { presentation: 'transparentModal', animation: 'fade', gestureEnabled: false, contentStyle: { backgroundColor: 'transparent' } } as const;
 function Navigation() {
   const { ready, session, recovering } = useAuth();
@@ -20,8 +21,8 @@ function Navigation() {
       <Stack.Screen name="login" /><Stack.Screen name="signup" />
     </Stack.Protected>
     <Stack.Protected guard={!!session && !recovering}>
-      <Stack.Screen name="bills/index" /><Stack.Screen name="expenses/index" /><Stack.Screen name="expenses/create" options={householdSheetOptions} /><Stack.Screen name="expenses/edit" options={householdSheetOptions} /><Stack.Screen name="expenses/[id]" />
-      <Stack.Screen name="notifications" options={householdSheetOptions} /><Stack.Screen name="settlements/index" options={householdSheetOptions} /><Stack.Screen name="home" /><Stack.Screen name="profile" />
+      <Stack.Screen name="bills/index" options={mainScreenOptions} /><Stack.Screen name="expenses/index" options={mainScreenOptions} /><Stack.Screen name="expenses/create" options={householdSheetOptions} /><Stack.Screen name="expenses/edit" options={householdSheetOptions} /><Stack.Screen name="expenses/[id]" options={householdSheetOptions} />
+      <Stack.Screen name="notifications" options={householdSheetOptions} /><Stack.Screen name="settlements/index" options={householdSheetOptions} /><Stack.Screen name="home" options={mainScreenOptions} /><Stack.Screen name="profile" options={mainScreenOptions} />
       <Stack.Screen name="households/index" options={householdSheetOptions} /><Stack.Screen name="households/create" options={householdSheetOptions} /><Stack.Screen name="households/[id]" options={householdSheetOptions} /><Stack.Screen name="households/members" options={householdSheetOptions} /><Stack.Screen name="households/settings" options={householdSheetOptions} />
     </Stack.Protected>
     <Stack.Protected guard={!!session}>

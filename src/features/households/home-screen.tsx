@@ -1,3 +1,4 @@
+import { MainNavigation } from '@/features/dashboard/main-navigation';
 import { displayExpenseTitle } from '@/features/expenses/display-title';
 import { CategoryIcon } from '@/features/expenses/ui';
 import { palette as appPalette } from '@/theme/palette';
@@ -80,12 +81,7 @@ export function HomeScreen() {
    {profile.isError?<DashboardCard><Text style={s.small}>Your profile could not be loaded.</Text><Button appearance="auth" label="Retry profile" variant="secondary" onPress={()=>void profile.refetch()}/></DashboardCard>:null}
   </ScrollView>
   {house?<Link href={{pathname:'/expenses/create',params:{household:house.id}}} asChild><Pressable accessibilityRole="button" accessibilityLabel="Add expense" style={s.fab}><DashboardIcon name="plus" color="white"/></Pressable></Link>:null}
-  <View style={s.nav}>
-   <Link href="/home" asChild><Pressable accessibilityRole="button" accessibilityState={{selected:true}} style={s.navItem}><View style={s.indicator}/><DashboardIcon name="home"/><Text style={[s.navLabel,s.activeNav]}>Home</Text></Pressable></Link>
-   <Link href="/expenses" asChild><Pressable accessibilityRole="button" style={s.navItem}><DashboardIcon name="receipt" color={appPalette.subtleText}/><Text style={s.navLabel}>Expenses</Text></Pressable></Link>
-   <Link href="/bills" asChild><Pressable accessibilityRole="button" style={s.navItem}><DashboardIcon name="calendar" color={appPalette.subtleText}/><Text style={s.navLabel}>Bills</Text></Pressable></Link>
-   <Link href="/profile" asChild><Pressable accessibilityRole="button" style={s.navItem}><DashboardIcon name="user" color={appPalette.subtleText}/><Text style={s.navLabel}>Me</Text></Pressable></Link>
-  </View>
+  <MainNavigation active="home"/>
  </SafeAreaView></View>;
 }
 function ActivityRow({event,name,currency,category,divider}:{event:ActivityEvent;name:string;currency:string;category?:string;divider:boolean}) {

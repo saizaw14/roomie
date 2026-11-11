@@ -1,6 +1,7 @@
+import { MainNavigation } from '@/features/dashboard/main-navigation';
 import { palette as appPalette } from '@/theme/palette';
 import { useState } from 'react';
-import { Link, router } from 'expo-router';
+import { router } from 'expo-router';
 import { KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,7 +12,6 @@ import { useAuth } from '@/lib/auth-context';
 import { authErrorMessage } from '@/features/auth/error-message';
 import { useHouseholds } from '@/features/households/use-households';
 import { useActivity } from '@/features/dashboard/use-activity';
-import { DashboardIcon, styles as nav } from '@/features/dashboard/components';
 import { ProfileEditor, ProfilePasswordForm } from './profile-forms';
 import { MenuCard, MenuRow, ProfileAvatar, ProfileIcon, s } from './profile-ui';
 import { PaymentQr } from './payment-qr';
@@ -25,9 +25,10 @@ export function ProfileScreen() {
  const [panel,setPanel]=useState<Panel|null>(null);const [busy,setBusy]=useState(false);const [error,setError]=useState<string|null>(null);const [notice,setNotice]=useState('');
  const activity=useActivity(panel==='activity'?house?.id??'':'',true);const insets=useSafeAreaInsets();
  const name=profile.data?.display_name??'Roomie member';const owner=houses.membership?.role==='owner';
- function open(value:Panel){setError(null);setPanel(value);}
- function close(){if(!busy)setPanel(null);}
- function saved(message:string){setPanel(null);setNotice(message);}
+ const [panelHistory,setPanelHistory]=useState<Panel[]>([]);
+ function open(value:Panel){setError(null);if(panel&&panel!==value)setPanelHistory(history=>[...history,panel]);setPanel(value);}
+ function close(){if(busy)return;const previous=panelHistory[panelHistory.length-1];setPanel(previous??null);setPanelHistory(history=>history.slice(0,-1));}
+ function saved(message:string){setPanel(null);setPanelHistory([]);setNotice(message);}
  async function logout(){setBusy(true);setError(null);try{await signOut();}catch(failure){setError(authErrorMessage(failure));}finally{setBusy(false);}}
  if(!loaded&&!fontError)return <LoadingScreen/>;
  return <View style={s.canvas}><SafeAreaView style={s.safe}>
@@ -44,7 +45,7 @@ export function ProfileScreen() {
    <Button appearance="auth" label="Log out" variant="secondary" style={s.logout} labelStyle={s.logoutLabel} leadingIcon={<ProfileIcon name="logout" color={appPalette.error}/>} onPress={()=>open('logout')}/>
    <Text style={s.version}>Roomie v1.0 · Shared living. Simpler money.</Text>
   </ScrollView>
-  <View style={nav.nav}>{([{label:'Home',href:'/home',icon:'home'},{label:'Expenses',href:'/expenses',icon:'receipt'}] as const).map(item=><Link key={item.label} href={item.href} asChild><Pressable accessibilityRole="button" style={nav.navItem}><DashboardIcon name={item.icon} color={appPalette.subtleText}/><Text style={nav.navLabel}>{item.label}</Text></Pressable></Link>)}<Link href="/bills" asChild><Pressable accessibilityRole="button" style={nav.navItem}><DashboardIcon name="calendar" color={appPalette.subtleText}/><Text style={nav.navLabel}>Bills</Text></Pressable></Link><View accessibilityRole="tab" accessibilityState={{selected:true}} style={nav.navItem}><View style={nav.indicator}/><DashboardIcon name="user"/><Text style={[nav.navLabel,nav.activeNav]}>Me</Text></View></View>
+  <MainNavigation active="profile"/>
  </SafeAreaView>
  <Modal visible={panel!==null} transparent animationType="fade" onRequestClose={close}>
   <View style={sheet.overlay}><Pressable style={StyleSheet.absoluteFill} accessibilityRole="button" accessibilityLabel="Close panel" disabled={busy} onPress={close}/><KeyboardAvoidingView pointerEvents="box-none" behavior={Platform.OS==='ios'?'padding':'height'} style={sheet.keyboard}>

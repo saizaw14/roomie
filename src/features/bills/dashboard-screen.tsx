@@ -1,6 +1,7 @@
+import { MainNavigation } from '@/features/dashboard/main-navigation';
 import { palette as appPalette } from '@/theme/palette';
 import { useState } from 'react';
-import { Link,useLocalSearchParams } from 'expo-router';
+import { Link,router,useLocalSearchParams } from 'expo-router';
 import {ScrollView,Text,View } from 'react-native';
 import { Pressable } from '@/components/ui/pressable';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -44,8 +45,8 @@ export function BillsDashboard(){
     {!owner?<Text style={[s.note,{marginTop:18}]}>The household owner manages recurring bills. Any active member can review and post a paid occurrence.</Text>:null}
    </>:null}
   </ScrollView>
-  <View style={d.nav}>{([{label:'Home',href:'/home',icon:'home'},{label:'Expenses',href:'/expenses',icon:'receipt'},{label:'Bills',href:'/bills',icon:'calendar'},{label:'Me',href:'/profile',icon:'user'}] as const).map(item=><Link key={item.label} href={item.href} asChild><Pressable accessibilityRole="button" accessibilityState={{selected:item.label==='Bills'}} style={d.navItem}>{item.label==='Bills'?<View style={d.indicator}/>:null}<DashboardIcon name={item.icon} color={item.label==='Bills'?appPalette.primary:appPalette.subtleText}/><Text style={[d.navLabel,item.label==='Bills'&&d.activeNav]}>{item.label}</Text></Pressable></Link>)}</View>
-  {visibleSheet&&house&&visibleSheet.house===house.id&&members.data?<BillSheet key={visibleSheet.bill?.id??'new'} house={house} members={members.data} owner={owner} bill={visibleSheet.bill} onClose={()=>{setSheet(null);setDismissed(params.bill??null);}}/>:null}
+  <MainNavigation active="bills"/>
+  {visibleSheet&&house&&visibleSheet.house===house.id&&members.data?<BillSheet key={visibleSheet.bill?.id??'new'} house={house} members={members.data} owner={owner} bill={visibleSheet.bill} onClose={()=>{if(!sheet&&params.bill){if(router.canGoBack())router.back();else router.replace('/bills');}else setSheet(null);setDismissed(params.bill??null);}}/>:null}
  </SafeAreaView></View>;
 }
 function BillCard({bill,today,currency,payer,ownMember,disabled,onPress}:{bill:Bill;today:string;currency:string;payer:string;ownMember?:string;disabled:boolean;onPress:()=>void}){
